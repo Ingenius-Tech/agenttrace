@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+  Usage guide (keep this comment in both X.resx and X.es.resx).
+    Key names: PascalCase, named by meaning and not by the text (StepStatusRunning, not Running).
+    Values with placeholders end in "Format" (StatusMonitoringFormat = "Monitoring: {0}"); describe each
+    placeholder in the <comment> of the entry. Never concatenate translated fragments: word order differs per language.
+    Plurals: two keys, SummarySteps_One and SummarySteps_Other, picked with Plural.Pick(n, one, other).
+    Adding a key: add the <data> entry to X.resx (English) AND to X.es.resx (Spanish) with the same name and the same
+    placeholders; ResourceParityTest fails otherwise. The strongly typed class X is generated at build time.
+    Adding a language: copy each X.resx to X.<code>.resx, translate the values and add the code to SupportedLanguages.
+    UI text never lives as a literal in code.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="GitDubiousOwnershipHint" xml:space="preserve">
+    <value>Git does not trust this folder (owned by another user). Add it with: git config --global --add safe.directory &lt;folder&gt;</value>
+    <comment>Shown instead of the raw git error when git reports dubious ownership.</comment>
+  </data>
+  <data name="StartupWarningUnknownLangFormat" xml:space="preserve">
+    <value>--lang is not supported: {0} (supported: {1})</value>
+    <comment>Startup warning. {0} = the value given, {1} = comma separated supported codes.</comment>
+  </data>
+  <data name="MenuLanguage" xml:space="preserve">
+    <value>Language</value>
+    <comment>Top bar menu that lists the supported languages.</comment>
+  </data>
+  <data name="LanguageRestartTitle" xml:space="preserve">
+    <value>Language</value>
+    <comment>Title of the restart dialog.</comment>
+  </data>
+  <data name="LanguageRestartMessageFormat" xml:space="preserve">
+    <value>The language will change to {0} the next time the application starts. Restart now?</value>
+    <comment>{0} = native name of the chosen language (see SupportedLanguages).</comment>
+  </data>
+  <data name="RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+    <comment>Button of the restart dialog.</comment>
+  </data>
+  <data name="RestartFailedFormat" xml:space="preserve">
+    <value>Could not restart: {0}</value>
+    <comment>Status bar message when the relaunch failed. {0} = reason.</comment>
+  </data>
+  <data name="RestartLater" xml:space="preserve">
+    <value>Later</value>
+    <comment>Button of the restart dialog.</comment>
+  </data>
+  <data name="ProjectFilesHeader" xml:space="preserve">
+    <value>Project files</value>
+    <comment>Header above the project tree.</comment>
+  </data>
+  <data name="NoProjectOpen" xml:space="preserve">
+    <value>No project open</value>
+    <comment>Under the project files header when no project is open.</comment>
+  </data>
+  <data name="TabExecutionGraph" xml:space="preserve">
+    <value>Execution graph</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabDiffInspector" xml:space="preserve">
+    <value>Diff inspector</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabProcessTelemetry" xml:space="preserve">
+    <value>Process telemetry</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabFile" xml:space="preserve">
+    <value>File</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabKnowledge" xml:space="preserve">
+    <value>Knowledge</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabHeatmap" xml:space="preserve">
+    <value>Heatmap</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TerminalButton" xml:space="preserve">
+    <value>Terminal</value>
+    <comment>Top bar button that opens a system terminal.</comment>
+  </data>
+  <data name="TerminalTooltip" xml:space="preserve">
+    <value>Open a system terminal in the project folder (Ctrl+T), for example to start an agent</value>
+    <comment>Tooltip of the terminal button.</comment>
+  </data>
+  <data name="OpenProjectButton" xml:space="preserve">
+    <value>Open Project...</value>
+    <comment>Top bar split button.</comment>
+  </data>
+  <data name="NoRecentProjects" xml:space="preserve">
+    <value>No recent projects</value>
+    <comment>Disabled item of the recent projects menu when the list is empty.</comment>
+  </data>
+  <data name="OpenProjectDialogTitle" xml:space="preserve">
+    <value>Select a project folder to monitor</value>
+    <comment>Title of the folder picker.</comment>
+  </data>
+  <data name="StatusReady" xml:space="preserve">
+    <value>Ready: open a project to start</value>
+    <comment>Status bar message when the application starts without a project.</comment>
+  </data>
+  <data name="StatusMonitoringFormat" xml:space="preserve">
+    <value>Monitoring: {0}</value>
+    <comment>Status bar message. {0} = project path.</comment>
+  </data>
+  <data name="StatusWaitingFormat" xml:space="preserve">
+    <value>Waiting for agent sessions for {0}</value>
+    <comment>Status bar message. {0} = project folder name.</comment>
+  </data>
+  <data name="StatusSessionFormat" xml:space="preserve">
+    <value>{0} · session {1}</value>
+    <comment>Status bar message when a session is found. {0} = agent name, {1} = trace file name.</comment>
+  </data>
+  <data name="StatusNoChangesInInspectorFormat" xml:space="preserve">
+    <value>{0}: no changes in the Diff inspector list</value>
+    <comment>Status bar message. {0} = file name.</comment>
+  </data>
+  <data name="DiffGitSearching" xml:space="preserve">
+    <value>Looking for the git repository…</value>
+    <comment>Git status line of the Diff inspector while the repository is located.</comment>
+  </data>
+  <data name="DiffSelectFile" xml:space="preserve">
+    <value>Select a file from the list to see its changes</value>
+    <comment>Message of the Diff inspector when nothing is selected.</comment>
+  </data>
+  <data name="DiffReadFailedFormat" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+    <comment>Message in the diff view. {0} = reason.</comment>
+  </data>
+  <data name="GitStatusRepositoryFormat" xml:space="preserve">
+    <value>Repository: {0}</value>
+    <comment>Git status line. {0} = repository root.</comment>
+  </data>
+  <data name="GitStatusMultipleFormat" xml:space="preserve">
+    <value>Project with {0}</value>
+    <comment>Git status line. {0} = the observer text for several repositories (ObserverRepositories_One/_Other).</comment>
+  </data>
+  <data name="GitStatusCreating" xml:space="preserve">
+    <value>Creating the repository…</value>
+    <comment>Git status line while git init runs.</comment>
+  </data>
+  <data name="GitInitFailedFormat" xml:space="preserve">
+    <value>The repository could not be created: {0}</value>
+    <comment>Git status line. {0} = reason.</comment>
+  </data>
+  <data name="GitInitFailedTitle" xml:space="preserve">
+    <value>The repository could not be created</value>
+    <comment>Header of the error dialog.</comment>
+  </data>
+  <data name="GitInitDialogTitle" xml:space="preserve">
+    <value>Project without git</value>
+    <comment>Title of the git init dialog.</comment>
+  </data>
+  <data name="GitInitDialogHeaderFormat" xml:space="preserve">
+    <value>“{0}” is not a git repository</value>
+    <comment>Header of the git init dialog. {0} = project folder name.</comment>
+  </data>
+  <data name="GitInitDialogMessage" xml:space="preserve">
+    <value>To show what the agent changes, AgentTrace Studio uses git. I can run in the project folder:
+
+    git init
+
+Without a repository the Inspector only shows the files that the trace says were edited, without a diff.
+If there is no commit, the whole project would appear as new: you can also create a first commit.</value>
+    <comment>Body of the git init dialog. Keep the line breaks and the indented command.</comment>
+  </data>
+  <data name="GitInitCommitCheckbox" xml:space="preserve">
+    <value>Also create an initial commit with the current state (git add -A and git commit)</value>
+    <comment>Check box of the git init dialog.</comment>
+  </data>
+  <data name="GitInitCreate" xml:space="preserve">
+    <value>Create repository</value>
+    <comment>Button of the git init dialog.</comment>
+  </data>
+  <data name="GitInitSkip" xml:space="preserve">
+    <value>Continue without git</value>
+    <comment>Button of the git init dialog.</comment>
+  </data>
+  <data name="ObserverWatchFailedFormat" xml:space="preserve">
+    <value>Could not watch the project: {0}</value>
+    <comment>Observer error shown in the status bar. {0} = reason.</comment>
+  </data>
+  <data name="ObserverNoAdapters" xml:space="preserve">
+    <value>No agent adapters available</value>
+    <comment>Observer error shown in the status bar.</comment>
+  </data>
+  <data name="ObserverTraceReadErrorFormat" xml:space="preserve">
+    <value>Error reading traces: {0}</value>
+    <comment>Observer error shown in the status bar. {0} = reason.</comment>
+  </data>
+  <data name="ObserverNoGitProgram" xml:space="preserve">
+    <value>The git program was not found: only the trace actions are shown, without diffs. Install it or set AGENTTRACE_GIT=&lt;path&gt;</value>
+    <comment>Git status line. Keep the AGENTTRACE_GIT variable name.</comment>
+  </data>
+  <data name="ObserverNotARepository" xml:space="preserve">
+    <value>The folder is not a git repository: only the trace actions are shown, without diffs</value>
+    <comment>Git status line.</comment>
+  </data>
+  <data name="ObserverRepositorySkippedFormat" xml:space="preserve">
+    <value>Repository skipped: {0}</value>
+    <comment>Observer error shown in the status bar. {0} = reason.</comment>
+  </data>
+  <data name="ObserverRepositories_One" xml:space="preserve">
+    <value>{0} repository: {1}</value>
+    <comment>Several repositories (singular form). {0} = count, {1} = comma separated relative folders.</comment>
+  </data>
+  <data name="ObserverRepositories_Other" xml:space="preserve">
+    <value>{0} repositories: {1}</value>
+    <comment>Several repositories (plural form). {0} = count, {1} = comma separated relative folders.</comment>
+  </data>
+  <data name="ObserverGitErrorFormat" xml:space="preserve">
+    <value>Error querying git: {0}</value>
+    <comment>Observer error shown in the status bar. {0} = reason.</comment>
+  </data>
+  <data name="ObserverBaselineResetFailedFormat" xml:space="preserve">
+    <value>Could not reset the baseline of {0}: {1}</value>
+    <comment>Observer error shown in the status bar. {0} = repository folder name, {1} = reason.</comment>
+  </data>
+  <data name="StartupWarningUnknownTabFormat" xml:space="preserve">
+    <value>Unknown --tab: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningUnknownKgViewFormat" xml:space="preserve">
+    <value>Unknown --kg-view: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningUnknownHeatmapAreaFormat" xml:space="preserve">
+    <value>Unknown --heatmap-area: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningUnknownRenderFormat" xml:space="preserve">
+    <value>Unknown --render: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningNotANumberFormat" xml:space="preserve">
+    <value>--{0} is not a number: {1}</value>
+    <comment>Startup warning. {0} = option name without dashes, {1} = the value given.</comment>
+  </data>
+  <data name="TerminalNotFoundFormat" xml:space="preserve">
+    <value>No terminal was found; set one with {0}=&lt;executable&gt;</value>
+    <comment>Status bar message. {0} = environment variable name.</comment>
+  </data>
+  <data name="TerminalOpenFailedFormat" xml:space="preserve">
+    <value>Could not open the terminal ({0}): {1}</value>
+    <comment>Status bar message. {0} = terminal executable, {1} = reason.</comment>
+  </data>
+  <data name="RestartUnknownExecutable" xml:space="preserve">
+    <value>the path of the running executable is unknown</value>
+    <comment>Reason used in RestartFailedFormat.</comment>
+  </data>
+</root>

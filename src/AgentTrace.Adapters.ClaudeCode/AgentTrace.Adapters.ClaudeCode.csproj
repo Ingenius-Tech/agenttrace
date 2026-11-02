@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
+    <InternalsVisibleTo Include="AgentTrace.Adapters.ClaudeCode.Tests" />
+  </ItemGroup>
+</Project>

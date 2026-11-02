@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <!-- Se usa solo por Avalonia.Headless (transitivo). [AvaloniaFact] de 12.1.4 no funciona con xunit.v3 4.0.2 (usa internas de 3.2.2): ver HeadlessHost. -->
+    <PackageReference Include="Avalonia.Headless.XUnit" />
+    <ProjectReference Include="..\..\src\AgentTrace.Desktop\AgentTrace.Desktop.csproj" />
+  </ItemGroup>
+  <!-- The synthetic Claude Code trace (the same one the adapter tests use): linked, not copied. -->
+  <ItemGroup>
+    <None Include="..\AgentTrace.Adapters.ClaudeCode.Tests\TestData\**" Link="TestData\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

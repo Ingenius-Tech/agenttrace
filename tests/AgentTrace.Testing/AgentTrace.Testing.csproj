@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Utilities shared by the tests (adapter contract, GitFixture, Eventually, traces). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AgentTrace.Core\AgentTrace.Core.csproj" />
+    <ProjectReference Include="..\..\src\AgentTrace.Git\AgentTrace.Git.csproj" />
+    <!-- Only the xUnit libraries (attributes and assertions), without the test executable. -->
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

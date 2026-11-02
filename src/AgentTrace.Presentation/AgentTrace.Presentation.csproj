@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure view logic: no Avalonia (checked by PresentationHasNoUiDependencyTest). -->
+  <ItemGroup>
+    <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
+    <ProjectReference Include="..\AgentTrace.Diff\AgentTrace.Diff.csproj" />
+    <ProjectReference Include="..\AgentTrace.Ingest\AgentTrace.Ingest.csproj" />
+    <ProjectReference Include="..\AgentTrace.Git\AgentTrace.Git.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AgentTrace.Presentation.Tests" />
+  </ItemGroup>
+  <!--
+    User-facing text lives in Resources/*.resx: X.resx is English (neutral), X.es.resx is the Spanish satellite.
+    The SDK embeds every .resx by glob; here the neutral files also get a public strongly typed class X in the
+    namespace AgentTrace.Presentation.Resources (generated at build time, compiled with the project).
+    A new area or key needs no change in this file.
+  -->
+  <ItemGroup>
+    <NeutralResx Include="Resources/*.resx" Exclude="Resources/*.*.resx" />
+    <EmbeddedResource Update="@(NeutralResx)"
+                      StronglyTypedLanguage="CSharp"
+                      PublicClass="true"
+                      StronglyTypedNamespace="AgentTrace.Presentation.Resources"
+                      StronglyTypedClassName="%(Filename)"
+                      StronglyTypedFileName="$(IntermediateOutputPath)%(Filename).Designer.cs" />
+  </ItemGroup>
+</Project>

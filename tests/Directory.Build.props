@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Common to the *.Tests projects (xUnit v3: test projects are executables). -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <Using Include="Xunit" />
+    <Compile Include="$(MSBuildThisFileDirectory)BuildSanityTest.cs" Link="BuildSanityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCultureInitializer.cs" Link="TestCultureInitializer.cs" />
+    <ProjectReference Include="..\AgentTrace.Testing\AgentTrace.Testing.csproj" />
+  </ItemGroup>
+</Project>

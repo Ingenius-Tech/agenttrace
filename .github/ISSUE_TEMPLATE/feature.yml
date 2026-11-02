@@ -1,0 +1,34 @@
+name: Propose an improvement
+description: A new feature or a change in behavior
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        AgentTrace Studio **observes**: it is not an IDE, it does not edit projects and it includes no agent. It must work offline and
+        without depending on a specific language or agent. Proposals must fit that.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it solves
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Product constraints
+      options:
+        - label: Works offline
+          required: true
+        - label: Does not depend on a specific language or agent (or degrades gracefully if the agent does not provide the data)
+          required: true

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AgentTrace.Diff\AgentTrace.Diff.csproj" />
+  </ItemGroup>
+</Project>

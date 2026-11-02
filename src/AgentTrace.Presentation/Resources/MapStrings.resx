@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+  Usage guide (keep this comment in both X.resx and X.es.resx).
+    Key names: PascalCase, named by meaning and not by the text (StepStatusRunning, not Running).
+    Values with placeholders end in "Format" (StatusMonitoringFormat = "Monitoring: {0}"); describe each
+    placeholder in the <comment> of the entry. Never concatenate translated fragments: word order differs per language.
+    Plurals: two keys, SummarySteps_One and SummarySteps_Other, picked with Plural.Pick(n, one, other).
+    Adding a key: add the <data> entry to X.resx (English) AND to X.es.resx (Spanish) with the same name and the same
+    placeholders; ResourceParityTest fails otherwise. The strongly typed class X is generated at build time.
+    Adding a language: copy each X.resx to X.<code>.resx, translate the values and add the code to SupportedLanguages.
+    UI text never lives as a literal in code.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HeatmapTabTitle" xml:space="preserve">
+    <value>Heatmap</value>
+    <comment>Sample key (Phase 0): title of the heatmap tab.</comment>
+  </data>
+  <data name="NoFilesYet" xml:space="preserve">
+    <value>No files yet</value>
+  </data>
+  <data name="CountFiles_One" xml:space="preserve">
+    <value>{0} file</value>
+    <comment>{0}: formatted count.</comment>
+  </data>
+  <data name="CountFiles_Other" xml:space="preserve">
+    <value>{0} files</value>
+  </data>
+  <data name="CountRelations_One" xml:space="preserve">
+    <value>{0} relation</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountRelations_Other" xml:space="preserve">
+    <value>{0} relations</value>
+  </data>
+  <data name="CountTurns_One" xml:space="preserve">
+    <value>{0} turn</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountTurns_Other" xml:space="preserve">
+    <value>{0} turns</value>
+  </data>
+  <data name="CountReads_One" xml:space="preserve">
+    <value>{0} read</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountReads_Other" xml:space="preserve">
+    <value>{0} reads</value>
+  </data>
+  <data name="CountWrites_One" xml:space="preserve">
+    <value>{0} write</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountWrites_Other" xml:space="preserve">
+    <value>{0} writes</value>
+  </data>
+  <data name="CountErrors_One" xml:space="preserve">
+    <value>{0} error</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountErrors_Other" xml:space="preserve">
+    <value>{0} errors</value>
+  </data>
+  <data name="CountTouched_One" xml:space="preserve">
+    <value>{0} touched</value>
+    <comment>{0}: count of files with activity.</comment>
+  </data>
+  <data name="CountTouched_Other" xml:space="preserve">
+    <value>{0} touched</value>
+  </data>
+  <data name="CountErrorsNoFile_One" xml:space="preserve">
+    <value>{0} error without a file</value>
+    <comment>{0}: count of failed calls whose target file is unknown.</comment>
+  </data>
+  <data name="CountErrorsNoFile_Other" xml:space="preserve">
+    <value>{0} errors without a file</value>
+  </data>
+  <data name="CountCreated_One" xml:space="preserve">
+    <value>{0} created</value>
+    <comment>{0}: count of file creations.</comment>
+  </data>
+  <data name="CountCreated_Other" xml:space="preserve">
+    <value>{0} created</value>
+  </data>
+  <data name="CountModified_One" xml:space="preserve">
+    <value>{0} modified</value>
+    <comment>{0}: count of file modifications.</comment>
+  </data>
+  <data name="CountModified_Other" xml:space="preserve">
+    <value>{0} modified</value>
+  </data>
+  <data name="CountDeleted_One" xml:space="preserve">
+    <value>{0} deleted</value>
+    <comment>{0}: count of file deletions.</comment>
+  </data>
+  <data name="CountDeleted_Other" xml:space="preserve">
+    <value>{0} deleted</value>
+  </data>
+  <data name="CountExternal_One" xml:space="preserve">
+    <value>{0} external</value>
+    <comment>{0}: count of external changes.</comment>
+  </data>
+  <data name="CountExternal_Other" xml:space="preserve">
+    <value>{0} external</value>
+  </data>
+  <data name="LegendCreated" xml:space="preserve">
+    <value>+ created</value>
+  </data>
+  <data name="LegendModified" xml:space="preserve">
+    <value>~ modified</value>
+  </data>
+  <data name="LegendDeleted" xml:space="preserve">
+    <value>− deleted</value>
+  </data>
+  <data name="LegendRead" xml:space="preserve">
+    <value>read</value>
+  </data>
+  <data name="LegendError" xml:space="preserve">
+    <value>error</value>
+  </data>
+  <data name="KnowledgeFit" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="KnowledgeFitTip" xml:space="preserve">
+    <value>View the whole graph</value>
+  </data>
+  <data name="KnowledgeOnlyChanged" xml:space="preserve">
+    <value>Changed only</value>
+  </data>
+  <data name="KnowledgeOnlyChangedTip" xml:space="preserve">
+    <value>Hide the files the agent has only read</value>
+  </data>
+  <data name="KnowledgeRepeated" xml:space="preserve">
+    <value>Repeated relations</value>
+  </data>
+  <data name="KnowledgeRepeatedTip" xml:space="preserve">
+    <value>Draw only the relations that occur in more than one turn (removes the noise of what happened once)</value>
+  </data>
+  <data name="Knowledge3D" xml:space="preserve">
+    <value>3D</value>
+  </data>
+  <data name="Knowledge3DTip" xml:space="preserve">
+    <value>3D view: the vertical axis is time (each file at the height of the turn where it appeared; the trail reaches the last turn where it was touched). Drag rotates, Shift+drag pans, the wheel zooms.</value>
+  </data>
+  <data name="KnowledgeTop" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="KnowledgeTopTip" xml:space="preserve">
+    <value>From above: same as the 2D view</value>
+  </data>
+  <data name="KnowledgeSide" xml:space="preserve">
+    <value>Side</value>
+  </data>
+  <data name="KnowledgeSideTip" xml:space="preserve">
+    <value>From the side: time runs vertically, to see how the project grows</value>
+  </data>
+  <data name="KnowledgeTrails" xml:space="preserve">
+    <value>Trails</value>
+  </data>
+  <data name="KnowledgeTrailsTip" xml:space="preserve">
+    <value>Vertical line from the first turn where each file appeared to the last one where it was touched: shows which old files are still active</value>
+  </data>
+  <data name="KnowledgeSearchPlaceholder" xml:space="preserve">
+    <value>Search file…</value>
+  </data>
+  <data name="KnowledgeSummaryFormat" xml:space="preserve">
+    <value>{0} · {1} · {2}</value>
+    <comment>{0}: files count text, {1}: relations count text, {2}: turns count text.</comment>
+  </data>
+  <data name="KnowledgeTipFormat" xml:space="preserve">
+    <value>{0}
+{1} reads · {2} agent changes</value>
+    <comment>{0}: relative path, {1}: reads, {2}: changes made by the agent.</comment>
+  </data>
+  <data name="KnowledgeTipExternalFormat" xml:space="preserve">
+    <value>{0}
+{1} reads · {2} agent changes · {3} external</value>
+    <comment>{0}: relative path, {1}: reads, {2}: changes made by the agent, {3}: external changes.</comment>
+  </data>
+  <data name="KnowledgeEmptyNoFiles" xml:space="preserve">
+    <value>No files touched by the agent in this session yet</value>
+  </data>
+  <data name="KnowledgeEmptyFilter" xml:space="preserve">
+    <value>No file matches this filter</value>
+  </data>
+  <data name="KnowledgeShowingFormat" xml:space="preserve">
+    <value>Showing {0} of {1} files</value>
+    <comment>{0}: nodes drawn, {1}: total files.</comment>
+  </data>
+  <data name="KnowledgeLegendNote" xml:space="preserve">
+    <value>dashed outline: external change · line: change together · arrow: read before edit</value>
+  </data>
+  <data name="KnowledgeTurnLabelFormat" xml:space="preserve">
+    <value>Turn {0}</value>
+    <comment>{0}: turn number (3D time axis label).</comment>
+  </data>
+  <data name="NodeFieldState" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="NodeFieldReads" xml:space="preserve">
+    <value>Reads</value>
+  </data>
+  <data name="NodeFieldCreations" xml:space="preserve">
+    <value>Creations</value>
+  </data>
+  <data name="NodeFieldModifications" xml:space="preserve">
+    <value>Modifications</value>
+  </data>
+  <data name="NodeFieldDeletions" xml:space="preserve">
+    <value>Deletions</value>
+  </data>
+  <data name="NodeFieldExternalChanges" xml:space="preserve">
+    <value>External changes</value>
+  </data>
+  <data name="NodeExternalChangesFormat" xml:space="preserve">
+    <value>{0} (not made by the agent)</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="NodeFieldErrors" xml:space="preserve">
+    <value>Errors</value>
+  </data>
+  <data name="NodeFieldTurns" xml:space="preserve">
+    <value>Turns</value>
+  </data>
+  <data name="NodeTurnsOfFormat" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0}: turns where the file was touched, {1}: total turns.</comment>
+  </data>
+  <data name="NodeStateOnlyErrors" xml:space="preserve">
+    <value>errors only</value>
+  </data>
+  <data name="NodeStateOnlyRead" xml:space="preserve">
+    <value>read only</value>
+  </data>
+  <data name="NodeStateCreated" xml:space="preserve">
+    <value>created</value>
+  </data>
+  <data name="NodeStateModified" xml:space="preserve">
+    <value>modified</value>
+  </data>
+  <data name="NodeStateDeleted" xml:space="preserve">
+    <value>deleted</value>
+  </data>
+  <data name="NodeStateExternalFormat" xml:space="preserve">
+    <value>{0} (external)</value>
+    <comment>{0}: base state text.</comment>
+  </data>
+  <data name="RelationCoChanged" xml:space="preserve">
+    <value>change together</value>
+  </data>
+  <data name="RelationReadBeforeEditOutgoing" xml:space="preserve">
+    <value>this one was read before that one was edited</value>
+  </data>
+  <data name="RelationReadBeforeEditIncoming" xml:space="preserve">
+    <value>that one was read before this one was edited</value>
+  </data>
+  <data name="HeatErrorsUnavailable" xml:space="preserve">
+    <value>This session's agent does not report which file a call fails on</value>
+  </data>
+  <data name="HeatFilesTouchedFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0}: files count text, {1}: touched count text.</comment>
+  </data>
+  <data name="HeatDeleted" xml:space="preserve">
+    <value>Deleted</value>
+  </data>
+  <data name="HeatNoActivity" xml:space="preserve">
+    <value>No activity</value>
+  </data>
+  <data name="HeatTruncated" xml:space="preserve">
+    <value>Showing part of the project</value>
+  </data>
+  <data name="HeatLegendNote" xml:space="preserve">
+    <value>more color = more activity · light outline: last turn · dashed: external change (red: deleted)</value>
+  </data>
+  <data name="HeatEmptyNoProject" xml:space="preserve">
+    <value>Open a project to see its heatmap</value>
+  </data>
+  <data name="HeatEmptyNoFiles" xml:space="preserve">
+    <value>The project has no files</value>
+  </data>
+  <data name="HeatEmptyFilter" xml:space="preserve">
+    <value>No file with activity for this filter</value>
+  </data>
+  <data name="HeatMenuOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="HeatMenuDiff" xml:space="preserve">
+    <value>View diff</value>
+  </data>
+  <data name="HeatMenuReveal" xml:space="preserve">
+    <value>Show in tree</value>
+  </data>
+  <data name="HeatMenuKnowledge" xml:space="preserve">
+    <value>View in Knowledge</value>
+  </data>
+  <data name="HeatMenuZoom" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="HeatReads" xml:space="preserve">
+    <value>Reads</value>
+  </data>
+  <data name="HeatWrites" xml:space="preserve">
+    <value>Writes</value>
+  </data>
+  <data name="HeatErrors" xml:space="preserve">
+    <value>Errors</value>
+  </data>
+  <data name="HeatReadsTip" xml:space="preserve">
+    <value>Count the agent's reads</value>
+  </data>
+  <data name="HeatWritesTip" xml:space="preserve">
+    <value>Count what the agent creates, modifies or deletes, and external changes</value>
+  </data>
+  <data name="HeatErrorsTip" xml:space="preserve">
+    <value>Count the calls that fail on the file</value>
+  </data>
+  <data name="HeatAreaSize" xml:space="preserve">
+    <value>Size on disk</value>
+  </data>
+  <data name="HeatAreaActivity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="HeatAreaTip" xml:space="preserve">
+    <value>What decides the size of each cell: size on disk (cold zones show up) or activity (only what was touched)</value>
+  </data>
+  <data name="HeatAreaLabel" xml:space="preserve">
+    <value>Area:</value>
+  </data>
+  <data name="HeatCrumbTip" xml:space="preserve">
+    <value>Back to this folder (Backspace or Alt+↑ go up one level)</value>
+  </data>
+</root>

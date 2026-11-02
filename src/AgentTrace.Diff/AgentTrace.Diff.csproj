@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="DiffPlex" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- UnavailableReason is shared with FileVersions. -->
+    <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
+  </ItemGroup>
+</Project>

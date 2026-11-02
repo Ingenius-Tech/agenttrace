@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AgentTrace.Adapters.ClaudeCode\AgentTrace.Adapters.ClaudeCode.csproj" />
+    <!-- The integration tests walk the whole chain: trace → adapter → core → presentation -->
+    <ProjectReference Include="..\..\src\AgentTrace.Ingest\AgentTrace.Ingest.csproj" />
+    <ProjectReference Include="..\..\src\AgentTrace.Git\AgentTrace.Git.csproj" />
+    <ProjectReference Include="..\..\src\AgentTrace.Presentation\AgentTrace.Presentation.csproj" />
+  </ItemGroup>
+  <!-- Synthetic traces copied from src/test/resources/claude (byte for byte): the tests read them from the output directory. -->
+  <ItemGroup>
+    <None Update="TestData\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

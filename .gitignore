@@ -1,0 +1,13 @@
+.idea/
+.vscode/
+*.log
+# Local working files of the maintainer's workflow: not published
+.claude/
+PLANS/
+PLANS_DONE/
+DEVLOG.md
+
+# .NET
+artifacts/
+**/bin/
+**/obj/

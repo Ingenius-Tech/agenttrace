@@ -1,0 +1,48 @@
+name: Report a bug
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not paste real traces without reviewing them**: they are shown without hiding secrets and may contain keys or personal paths.
+        Vulnerabilities are reported privately (see SECURITY.md), not here.
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens
+      description: What you expected and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the project…
+        2. Go to the tab…
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows, Linux, macOS]
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent whose trace is being observed
+      placeholder: Claude Code 2.x, Codex CLI…
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or synthetic traces
+      description: A screenshot or a minimal trace excerpt, already cleaned of sensitive data.

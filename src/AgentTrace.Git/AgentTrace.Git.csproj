@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
+    <!-- Only for UnifiedDiffEngine.LooksBinary (same binary criterion as the diff viewer). -->
+    <ProjectReference Include="..\AgentTrace.Diff\AgentTrace.Diff.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+  Usage guide (keep this comment in both X.resx and X.es.resx).
+    Key names: PascalCase, named by meaning and not by the text (StepStatusRunning, not Running).
+    Values with placeholders end in "Format" (StatusMonitoringFormat = "Monitoring: {0}"); describe each
+    placeholder in the <comment> of the entry. Never concatenate translated fragments: word order differs per language.
+    Plurals: two keys, SummarySteps_One and SummarySteps_Other, picked with Plural.Pick(n, one, other).
+    Adding a key: add the <data> entry to X.resx (English) AND to X.es.resx (Spanish) with the same name and the same
+    placeholders; ResourceParityTest fails otherwise. The strongly typed class X is generated at build time.
+    Adding a language: copy each X.resx to X.<code>.resx, translate the values and add the code to SupportedLanguages.
+    UI text never lives as a literal in code.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="UnavailableBinary" xml:space="preserve">
+    <value>binary</value>
+    <comment>Reason a file cannot be compared (UnavailableReason.Binary).</comment>
+  </data>
+  <data name="UnavailableTooLarge" xml:space="preserve">
+    <value>too large</value>
+    <comment>Reason a file or diff is skipped (UnavailableReason.TooLarge).</comment>
+  </data>
+  <data name="UnavailableNoBaseline" xml:space="preserve">
+    <value>no baseline</value>
+    <comment>UnavailableReason.NoBaseline.</comment>
+  </data>
+  <data name="UnavailableSubmoduleOrFolder" xml:space="preserve">
+    <value>submodule or folder</value>
+    <comment>UnavailableReason.SubmoduleOrFolder.</comment>
+  </data>
+  <data name="UnavailableNoRepository" xml:space="preserve">
+    <value>no git repository: there is no baseline to compare with</value>
+    <comment>UnavailableReason.NoRepository.</comment>
+  </data>
+  <data name="UnavailableOutsideObservedRepositories" xml:space="preserve">
+    <value>the file does not belong to any observed repository</value>
+    <comment>UnavailableReason.OutsideObservedRepositories.</comment>
+  </data>
+  <data name="ContentMissing" xml:space="preserve">
+    <value>The file no longer exists</value>
+    <comment>ContentNote.Missing.</comment>
+  </data>
+  <data name="ContentIsFolder" xml:space="preserve">
+    <value>It is a folder</value>
+    <comment>ContentNote.IsFolder.</comment>
+  </data>
+  <data name="ContentCannotReadNowFormat" xml:space="preserve">
+    <value>Cannot read it right now: {0}</value>
+    <comment>ContentNote.CannotReadNow. {0} = system message.</comment>
+  </data>
+  <data name="ContentCannotReadFormat" xml:space="preserve">
+    <value>Cannot read it: {0}</value>
+    <comment>ContentNote.CannotRead. {0} = exception text.</comment>
+  </data>
+  <data name="ContentNotUtf8" xml:space="preserve">
+    <value>The file is not UTF-8: shown as ISO-8859-1</value>
+    <comment>ContentNote.NotUtf8.</comment>
+  </data>
+  <data name="EncodingUtf8Bom" xml:space="preserve">
+    <value>UTF-8 (with BOM)</value>
+    <comment>Label of a UTF-8 file that starts with a byte order mark.</comment>
+  </data>
+  <data name="MainAgentTitle" xml:space="preserve">
+    <value>Main agent</value>
+    <comment>Title of the main lane in the graph (its Title is null).</comment>
+  </data>
+  <data name="AttributionAmbiguousFormat" xml:space="preserve">
+    <value>? {0} candidates: {1}</value>
+    <comment>Change attributed to several possible tool calls. {0} = number of calls, {1} = comma separated tool names.</comment>
+  </data>
+  <data name="AttributionExternal" xml:space="preserve">
+    <value>external</value>
+    <comment>Change that no agent call explains.</comment>
+  </data>
+  <data name="AttributionUndated" xml:space="preserve">
+    <value>unknown time</value>
+    <comment>Change without a timestamp, so it cannot be attributed.</comment>
+  </data>
+  <data name="ChangeLabelCreated" xml:space="preserve">
+    <value>created</value>
+    <comment>Singular label of a created file.</comment>
+  </data>
+  <data name="ChangeLabelModified" xml:space="preserve">
+    <value>modified</value>
+    <comment>Singular label of a modified file.</comment>
+  </data>
+  <data name="ChangeLabelDeleted" xml:space="preserve">
+    <value>deleted</value>
+    <comment>Singular label of a deleted file.</comment>
+  </data>
+  <data name="ChangePluralCreated" xml:space="preserve">
+    <value>created</value>
+    <comment>Plural label of created files (used after a count: '3 created').</comment>
+  </data>
+  <data name="ChangePluralModified" xml:space="preserve">
+    <value>modified</value>
+    <comment>Plural label of modified files (used after a count).</comment>
+  </data>
+  <data name="ChangePluralDeleted" xml:space="preserve">
+    <value>deleted</value>
+    <comment>Plural label of deleted files (used after a count).</comment>
+  </data>
+  <data name="DiffContentUnavailableFormat" xml:space="preserve">
+    <value>Cannot show the content: {0}</value>
+    <comment>{0} = reason (see Unavailable* keys).</comment>
+  </data>
+  <data name="DiffUnavailableFormat" xml:space="preserve">
+    <value>Cannot show the diff: {0}</value>
+    <comment>{0} = reason (see Unavailable* keys).</comment>
+  </data>
+  <data name="DiffNewEmptyFile" xml:space="preserve">
+    <value>New empty file</value>
+    <comment>Diff message for a created file with no content.</comment>
+  </data>
+  <data name="DiffDeletedEmptyFile" xml:space="preserve">
+    <value>File deleted (it was empty)</value>
+    <comment>Diff message for a deleted file that had no content.</comment>
+  </data>
+  <data name="DiffNoContentChanges" xml:space="preserve">
+    <value>No content differences (only line endings or permissions change)</value>
+    <comment>Diff message when both versions have the same text.</comment>
+  </data>
+  <data name="EventUserFormat" xml:space="preserve">
+    <value>User · {0}</value>
+    <comment>Telemetry line. {0} = the user message on one line.</comment>
+  </data>
+  <data name="EventAssistantFormat" xml:space="preserve">
+    <value>Assistant · {0}</value>
+    <comment>Telemetry line. {0} = the assistant text on one line.</comment>
+  </data>
+  <data name="EventThinking" xml:space="preserve">
+    <value>Thinking</value>
+    <comment>Telemetry line of a reasoning block without duration.</comment>
+  </data>
+  <data name="EventThinkingDurationFormat" xml:space="preserve">
+    <value>Thinking · {0}</value>
+    <comment>Telemetry line of a reasoning block. {0} = duration with unit, e.g. 1.5 s.</comment>
+  </data>
+  <data name="EventToolCallFormat" xml:space="preserve">
+    <value>[Tool] {0} · {1}</value>
+    <comment>Telemetry line of a tool call. {0} = tool name, {1} = its input on one line.</comment>
+  </data>
+  <data name="EventToolErrorFormat" xml:space="preserve">
+    <value>[Error] {0}</value>
+    <comment>Telemetry line of a failed tool result. {0} = output on one line.</comment>
+  </data>
+  <data name="EventToolResultFormat" xml:space="preserve">
+    <value>[Result] {0}</value>
+    <comment>Telemetry line of a tool result. {0} = output on one line.</comment>
+  </data>
+  <data name="EventFileChangedFormat" xml:space="preserve">
+    <value>[File] {0} {1}</value>
+    <comment>Telemetry line of a file change. {0} = change label (created, modified, deleted), {1} = path.</comment>
+  </data>
+  <data name="EventFileChangedExternalFormat" xml:space="preserve">
+    <value>[File] {0} {1} (external)</value>
+    <comment>Same as EventFileChangedFormat for a change that no agent call explains.</comment>
+  </data>
+  <data name="EventFileReadFormat" xml:space="preserve">
+    <value>[Read] {0}</value>
+    <comment>Telemetry line of a file read. {0} = path.</comment>
+  </data>
+  <data name="EventSubagentFormat" xml:space="preserve">
+    <value>↳ Subagent {0}</value>
+    <comment>Telemetry line when a subagent starts. {0} = its description on one line.</comment>
+  </data>
+  <data name="EventTokensFormat" xml:space="preserve">
+    <value>Tokens · input {0} · output {1} · cache {2}</value>
+    <comment>Telemetry line of token usage. {0} = input, {1} = output, {2} = cache read plus created.</comment>
+  </data>
+  <data name="EventTurnEnded" xml:space="preserve">
+    <value>Turn ended</value>
+    <comment>Telemetry line of a finished turn without duration.</comment>
+  </data>
+  <data name="EventTurnEndedDurationFormat" xml:space="preserve">
+    <value>Turn ended · {0}</value>
+    <comment>Telemetry line of a finished turn. {0} = duration with unit.</comment>
+  </data>
+  <data name="FileBinaryDetailsFormat" xml:space="preserve">
+    <value>Binary · {0}</value>
+    <comment>File header details of a binary file. {0} = size.</comment>
+  </data>
+  <data name="FileLines_One" xml:space="preserve">
+    <value>{0} line</value>
+    <comment>Line count in the file header (singular). {0} = number.</comment>
+  </data>
+  <data name="FileLines_Other" xml:space="preserve">
+    <value>{0} lines</value>
+    <comment>Line count in the file header (plural). {0} = number.</comment>
+  </data>
+  <data name="FileTruncatedWarningFormat" xml:space="preserve">
+    <value>Truncated: only the first {0} MiB are shown</value>
+    <comment>Warning. {0} = size limit in MiB.</comment>
+  </data>
+  <data name="FileLinkWarningFormat" xml:space="preserve">
+    <value>Link to {0}</value>
+    <comment>Warning shown for a symbolic link. {0} = target.</comment>
+  </data>
+  <data name="FileMixedEndingsWarning" xml:space="preserve">
+    <value>Line endings are mixed</value>
+    <comment>Warning in the file header.</comment>
+  </data>
+  <data name="FileBinaryPlaceholderFormat" xml:space="preserve">
+    <value>Binary file ({0}): its content is not shown</value>
+    <comment>Shown instead of the text of a binary file. {0} = size.</comment>
+  </data>
+  <data name="FileEmptyPlaceholder" xml:space="preserve">
+    <value>The file is empty</value>
+    <comment>Shown instead of the text of an empty file.</comment>
+  </data>
+  <data name="LineEndingNone" xml:space="preserve">
+    <value>no line breaks</value>
+    <comment>Line ending kind in the file header: the file has no line breaks.</comment>
+  </data>
+  <data name="LineEndingMixed" xml:space="preserve">
+    <value>mixed line endings</value>
+    <comment>Line ending kind in the file header: LF and CRLF mixed.</comment>
+  </data>
+  <data name="NodeReadByAgentTooltip" xml:space="preserve">
+    <value>Read by the agent</value>
+    <comment>Tooltip of a file in the tree that the agent only read.</comment>
+  </data>
+  <data name="NodeReadByAgentPart" xml:space="preserve">
+    <value>read by the agent</value>
+    <comment>Last part of the tooltip of a changed file that was also read (the tooltip is capitalized afterwards).</comment>
+  </data>
+  <data name="ActorAgent" xml:space="preserve">
+    <value>by the agent</value>
+    <comment>Who changed the file.</comment>
+  </data>
+  <data name="ActorExternal" xml:space="preserve">
+    <value>external (user or other process)</value>
+    <comment>Who changed the file.</comment>
+  </data>
+  <data name="ActorUnknown" xml:space="preserve">
+    <value>unknown author</value>
+    <comment>Who changed the file.</comment>
+  </data>
+  <data name="FolderChanges_One" xml:space="preserve">
+    <value>{0} change: {1}{2}</value>
+    <comment>Tooltip of a folder (singular). {0} = total, {1} = counts by kind, {2} = external suffix or empty.</comment>
+  </data>
+  <data name="FolderChanges_Other" xml:space="preserve">
+    <value>{0} changes: {1}{2}</value>
+    <comment>Tooltip of a folder (plural). {0} = total, {1} = counts by kind, {2} = external suffix or empty.</comment>
+  </data>
+  <data name="FolderExternal_One" xml:space="preserve">
+    <value> · {0} external</value>
+    <comment>Suffix of the folder tooltip (singular). {0} = number.</comment>
+  </data>
+  <data name="FolderExternal_Other" xml:space="preserve">
+    <value> · {0} external</value>
+    <comment>Suffix of the folder tooltip (plural). {0} = number.</comment>
+  </data>
+  <data name="StatusEventsLabel" xml:space="preserve">
+    <value>events</value>
+    <comment>Status bar counter label.</comment>
+  </data>
+  <data name="StatusEventsTooltipFormat" xml:space="preserve">
+    <value>{0} session events</value>
+    <comment>Tooltip. {0} = number.</comment>
+  </data>
+  <data name="StatusTurnLabel_One" xml:space="preserve">
+    <value>turn</value>
+    <comment>Status bar counter label (singular).</comment>
+  </data>
+  <data name="StatusTurnLabel_Other" xml:space="preserve">
+    <value>turns</value>
+    <comment>Status bar counter label (plural).</comment>
+  </data>
+  <data name="StatusTurnsTooltip" xml:space="preserve">
+    <value>Turns the agent has finished</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusToolsLabel" xml:space="preserve">
+    <value>tools</value>
+    <comment>Status bar counter label.</comment>
+  </data>
+  <data name="StatusToolsTooltip" xml:space="preserve">
+    <value>Tool calls</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusErrorLabel_One" xml:space="preserve">
+    <value>error</value>
+    <comment>Status bar counter label (singular).</comment>
+  </data>
+  <data name="StatusErrorLabel_Other" xml:space="preserve">
+    <value>errors</value>
+    <comment>Status bar counter label (plural).</comment>
+  </data>
+  <data name="StatusErrorsTooltip" xml:space="preserve">
+    <value>Tool calls that returned an error</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusNoErrorsTooltip" xml:space="preserve">
+    <value>No call has failed</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusFilesLabel" xml:space="preserve">
+    <value>files</value>
+    <comment>Status bar counter label.</comment>
+  </data>
+  <data name="StatusFilesTooltip" xml:space="preserve">
+    <value>Files that have changed</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusExternalLabel" xml:space="preserve">
+    <value>external</value>
+    <comment>Status bar counter label.</comment>
+  </data>
+  <data name="StatusExternalTooltip" xml:space="preserve">
+    <value>Changes that no agent call explains (the user or another process)</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusSubagentLabel_One" xml:space="preserve">
+    <value>subagent</value>
+    <comment>Status bar counter label (singular).</comment>
+  </data>
+  <data name="StatusSubagentLabel_Other" xml:space="preserve">
+    <value>subagents</value>
+    <comment>Status bar counter label (plural).</comment>
+  </data>
+  <data name="StatusSubagentsTooltip" xml:space="preserve">
+    <value>Subagents launched</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="StatusTokensLabel" xml:space="preserve">
+    <value>tokens</value>
+    <comment>Status bar counter label.</comment>
+  </data>
+  <data name="StatusTokensTooltipFormat" xml:space="preserve">
+    <value>Input {0} · output {1} · cache read {2} · cache created {3}</value>
+    <comment>Tooltip. All placeholders are numbers.</comment>
+  </data>
+  <data name="SearchKindRequest" xml:space="preserve">
+    <value>Request</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchKindResponse" xml:space="preserve">
+    <value>Response</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchKindThinking" xml:space="preserve">
+    <value>Reasoning</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchKindTool" xml:space="preserve">
+    <value>Tool</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchKindFile" xml:space="preserve">
+    <value>File</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchKindError" xml:space="preserve">
+    <value>Error</value>
+    <comment>Kind of a search result.</comment>
+  </data>
+  <data name="SearchTurnFormat" xml:space="preserve">
+    <value>Turn {0}</value>
+    <comment>Where a result comes from. {0} = turn number (from 1).</comment>
+  </data>
+  <data name="SearchLaneMain" xml:space="preserve">
+    <value>main thread</value>
+    <comment>Where a result comes from.</comment>
+  </data>
+  <data name="SearchLaneSubagentFormat" xml:space="preserve">
+    <value>subagent {0}</value>
+    <comment>Where a result comes from. {0} = start of the subagent id.</comment>
+  </data>
+  <data name="SearchTruncated" xml:space="preserve">
+    <value>text cut off</value>
+    <comment>Marks a result whose indexed text was cut.</comment>
+  </data>
+  <data name="SearchNoResults" xml:space="preserve">
+    <value>No results</value>
+    <comment>Summary of the search window.</comment>
+  </data>
+  <data name="SearchMoreResultsFormat" xml:space="preserve">
+    <value>{0} results (there are more: refine the search)</value>
+    <comment>Summary when the limit is reached. {0} = limit.</comment>
+  </data>
+  <data name="SearchResults_One" xml:space="preserve">
+    <value>{0} result</value>
+    <comment>Summary of the search window (singular).</comment>
+  </data>
+  <data name="SearchResults_Other" xml:space="preserve">
+    <value>{0} results</value>
+    <comment>Summary of the search window (plural).</comment>
+  </data>
+  <data name="SearchWindowTitle" xml:space="preserve">
+    <value>Search the session</value>
+    <comment>Title of the search window.</comment>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search the session: error, mvn, a file, something the agent said…</value>
+    <comment>Placeholder of the search box.</comment>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>Type what you are looking for. All words must appear; case and accents do not matter.</value>
+    <comment>Shown while the search box is empty.</comment>
+  </data>
+  <data name="SearchFilterAll" xml:space="preserve">
+    <value>All</value>
+    <comment>Kind filter of the search window.</comment>
+  </data>
+  <data name="SearchFilterRequests" xml:space="preserve">
+    <value>Requests</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchFilterResponses" xml:space="preserve">
+    <value>Responses</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchFilterThinking" xml:space="preserve">
+    <value>Reasoning</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchFilterTools" xml:space="preserve">
+    <value>Tools</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchFilterFiles" xml:space="preserve">
+    <value>Files</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchFilterErrors" xml:space="preserve">
+    <value>Errors</value>
+    <comment>Kind filter.</comment>
+  </data>
+  <data name="SearchLaneAll" xml:space="preserve">
+    <value>All threads</value>
+    <comment>Thread filter of the search window.</comment>
+  </data>
+  <data name="SearchLaneMainFilter" xml:space="preserve">
+    <value>Main thread</value>
+    <comment>Thread filter.</comment>
+  </data>
+  <data name="SearchLaneSubagents" xml:space="preserve">
+    <value>Subagents</value>
+    <comment>Thread filter.</comment>
+  </data>
+  <data name="SearchTurnPlaceholder" xml:space="preserve">
+    <value>Turn</value>
+    <comment>Placeholder of the turn filter box.</comment>
+  </data>
+  <data name="DiffBaselineSession" xml:space="preserve">
+    <value>From the start of the observation</value>
+    <comment>Baseline choice.</comment>
+  </data>
+  <data name="DiffBaselineHead" xml:space="preserve">
+    <value>Against HEAD</value>
+    <comment>Baseline choice.</comment>
+  </data>
+  <data name="DiffOpenProjectStatus" xml:space="preserve">
+    <value>Open a project to see its changes</value>
+    <comment>Status line of the diff tab before a project is open.</comment>
+  </data>
+  <data name="DiffCompareLabel" xml:space="preserve">
+    <value>Compare:</value>
+    <comment>Label of the baseline selector.</comment>
+  </data>
+  <data name="DiffResetBaseline" xml:space="preserve">
+    <value>Reset baseline</value>
+    <comment>Button.</comment>
+  </data>
+  <data name="DiffNoChangesPlaceholder" xml:space="preserve">
+    <value>No changes against the baseline</value>
+    <comment>Placeholder of the change list.</comment>
+  </data>
+  <data name="DiffSelectFile" xml:space="preserve">
+    <value>Select a file from the list to see its changes</value>
+    <comment>Message of the diff viewer.</comment>
+  </data>
+  <data name="DiffFilesChanged_One" xml:space="preserve">
+    <value>{0} file changed</value>
+    <comment>Status line of the diff tab (singular).</comment>
+  </data>
+  <data name="DiffFilesChanged_Other" xml:space="preserve">
+    <value>{0} files changed</value>
+    <comment>Status line of the diff tab (plural).</comment>
+  </data>
+  <data name="RevealInTree" xml:space="preserve">
+    <value>Show in tree</value>
+    <comment>Button and menu entry.</comment>
+  </data>
+  <data name="ActionOpen" xml:space="preserve">
+    <value>Open</value>
+    <comment>Button and menu entry that opens a file in the viewer.</comment>
+  </data>
+  <data name="ActionShowDiff" xml:space="preserve">
+    <value>View diff</value>
+    <comment>Button that shows the diff of a file.</comment>
+  </data>
+  <data name="ActionShowChanges" xml:space="preserve">
+    <value>View changes</value>
+    <comment>Button and menu entry that shows the changes of a file.</comment>
+  </data>
+  <data name="ActionCopyPath" xml:space="preserve">
+    <value>Copy path</value>
+    <comment>Context menu entry.</comment>
+  </data>
+  <data name="DetailCloseTooltip" xml:space="preserve">
+    <value>Close the detail</value>
+    <comment>Tooltip of the close button of the detail pane.</comment>
+  </data>
+  <data name="DetailGoToSubagent" xml:space="preserve">
+    <value>Go to subagent</value>
+    <comment>Button in the step detail.</comment>
+  </data>
+  <data name="DetailFilesHeading" xml:space="preserve">
+    <value>Files</value>
+    <comment>Heading of the files touched by a step.</comment>
+  </data>
+  <data name="DetailActionRead" xml:space="preserve">
+    <value>read</value>
+    <comment>Action of a file that was only read (the others use the ChangeLabel* keys).</comment>
+  </data>
+  <data name="DetailViaGitTooltip" xml:space="preserve">
+    <value>Attributed by git from the time of the change, not declared in the trace</value>
+    <comment>Tooltip of a file attributed through git.</comment>
+  </data>
+  <data name="FileDetailRelated" xml:space="preserve">
+    <value>Related</value>
+    <comment>Heading of the related files in the file detail panel.</comment>
+  </data>
+  <data name="FileNoneOpen" xml:space="preserve">
+    <value>No file open</value>
+    <comment>Title of the file tab when nothing is open.</comment>
+  </data>
+  <data name="TreeExpandToChanges" xml:space="preserve">
+    <value>Expand to the changes</value>
+    <comment>Tooltip of a tree toolbar button.</comment>
+  </data>
+  <data name="TreeCollapseAll" xml:space="preserve">
+    <value>Collapse all</value>
+    <comment>Tooltip of a tree toolbar button.</comment>
+  </data>
+  <data name="TreeOnlyChangesTooltip" xml:space="preserve">
+    <value>Only files changed or read by the agent</value>
+    <comment>Tooltip of the filter toggle of the tree.</comment>
+  </data>
+  <data name="TelemetryHeader" xml:space="preserve">
+    <value>Agent events (live trace)</value>
+    <comment>Heading of the telemetry tab.</comment>
+  </data>
+  <data name="TelemetryEmpty" xml:space="preserve">
+    <value>Open a project (Ctrl+O) to follow AI agents live</value>
+    <comment>First line of the telemetry list before a project is open.</comment>
+  </data>
+</root>

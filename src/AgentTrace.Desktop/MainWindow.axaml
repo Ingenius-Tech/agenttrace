@@ -1,0 +1,7 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AgentTrace.Desktop.MainWindow"
+        Title="AgentTrace Studio — AI Agent Observability"
+        MinWidth="1100" MinHeight="700"
+        Width="1400" Height="880"
+        Background="#1C1C1E" />

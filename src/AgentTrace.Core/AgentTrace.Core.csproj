@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Neutral core: no dependencies (checked by CoreHasNoDependenciesTest). -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="AgentTrace.Core.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AgentTrace.Core/AgentTrace.Core.csproj" />
+    <Project Path="src/AgentTrace.Diff/AgentTrace.Diff.csproj" />
+    <Project Path="src/AgentTrace.Ingest/AgentTrace.Ingest.csproj" />
+    <Project Path="src/AgentTrace.Git/AgentTrace.Git.csproj" />
+    <Project Path="src/AgentTrace.Adapters.ClaudeCode/AgentTrace.Adapters.ClaudeCode.csproj" />
+    <Project Path="src/AgentTrace.Presentation/AgentTrace.Presentation.csproj" />
+    <Project Path="src/AgentTrace.Desktop/AgentTrace.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AgentTrace.Testing/AgentTrace.Testing.csproj" />
+    <Project Path="tests/AgentTrace.Core.Tests/AgentTrace.Core.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Diff.Tests/AgentTrace.Diff.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Ingest.Tests/AgentTrace.Ingest.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Git.Tests/AgentTrace.Git.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Adapters.ClaudeCode.Tests/AgentTrace.Adapters.ClaudeCode.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Presentation.Tests/AgentTrace.Presentation.Tests.csproj" />
+    <Project Path="tests/AgentTrace.Desktop.Tests/AgentTrace.Desktop.Tests.csproj" />
+  </Folder>
+</Solution>

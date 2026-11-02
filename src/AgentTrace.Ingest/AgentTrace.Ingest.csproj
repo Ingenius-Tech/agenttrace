@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
+    <ProjectReference Include="..\AgentTrace.Diff\AgentTrace.Diff.csproj" />
+    <InternalsVisibleTo Include="AgentTrace.Ingest.Tests" />
+  </ItemGroup>
+</Project>

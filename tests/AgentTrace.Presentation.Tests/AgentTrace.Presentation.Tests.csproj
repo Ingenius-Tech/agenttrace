@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AgentTrace.Presentation\AgentTrace.Presentation.csproj" />
+    <!-- Only the acceptance tests with the real trace need the Claude Code adapter -->
+    <ProjectReference Include="..\..\src\AgentTrace.Adapters.ClaudeCode\AgentTrace.Adapters.ClaudeCode.csproj" />
+  </ItemGroup>
+</Project>

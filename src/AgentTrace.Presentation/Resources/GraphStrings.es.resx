@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+  Usage guide (keep this comment in both X.resx and X.es.resx).
+    Key names: PascalCase, named by meaning and not by the text (StepStatusRunning, not Running).
+    Values with placeholders end in "Format" (StatusMonitoringFormat = "Monitoring: {0}"); describe each
+    placeholder in the <comment> of the entry. Never concatenate translated fragments: word order differs per language.
+    Plurals: two keys, SummarySteps_One and SummarySteps_Other, picked with Plural.Pick(n, one, other).
+    Adding a key: add the <data> entry to X.resx (English) AND to X.es.resx (Spanish) with the same name and the same
+    placeholders; ResourceParityTest fails otherwise. The strongly typed class X is generated at build time.
+    Adding a language: copy each X.resx to X.<code>.resx, translate the values and add the code to SupportedLanguages.
+    UI text never lives as a literal in code.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TabTitle" xml:space="preserve">
+    <value>Grafo de Ejecución</value>
+    <comment>Sample key (Phase 0): title of the graph tab.</comment>
+  </data>
+  <data name="StepStatusRunning" xml:space="preserve">
+    <value>en curso</value>
+    <comment>Step status without a known start time.</comment>
+  </data>
+  <data name="StepStatusRunningFormat" xml:space="preserve">
+    <value>en curso · {0}</value>
+    <comment>{0} = time elapsed since the call started.</comment>
+  </data>
+  <data name="StepStatusError" xml:space="preserve">
+    <value>error</value>
+    <comment>Step status: failed, duration unknown.</comment>
+  </data>
+  <data name="StepStatusErrorFormat" xml:space="preserve">
+    <value>error · {0}</value>
+    <comment>{0} = duration of the step.</comment>
+  </data>
+  <data name="StepStatusOk" xml:space="preserve">
+    <value>ok</value>
+    <comment>Step status: succeeded, duration unknown.</comment>
+  </data>
+  <data name="StepStatusNoResult" xml:space="preserve">
+    <value>sin resultado</value>
+    <comment>Step status: the turn ended before the result arrived.</comment>
+  </data>
+  <data name="FieldTool" xml:space="preserve">
+    <value>Herramienta</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldKind" xml:space="preserve">
+    <value>Tipo</value>
+    <comment>Detail field label: the kind of tool (read, write...).</comment>
+  </data>
+  <data name="FieldSummary" xml:space="preserve">
+    <value>Resumen</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldState" xml:space="preserve">
+    <value>Estado</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldStart" xml:space="preserve">
+    <value>Inicio</value>
+    <comment>Detail field label: start time.</comment>
+  </data>
+  <data name="FieldDuration" xml:space="preserve">
+    <value>Duración</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldTokens" xml:space="preserve">
+    <value>Tokens</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldSteps" xml:space="preserve">
+    <value>Pasos</value>
+    <comment>Detail field label: number of steps of a turn.</comment>
+  </data>
+  <data name="FieldExternalChanges" xml:space="preserve">
+    <value>Cambios externos</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="FieldAnswerTokens" xml:space="preserve">
+    <value>Tokens de la respuesta</value>
+    <comment>Detail field label.</comment>
+  </data>
+  <data name="TokensSharedFormat" xml:space="preserve">
+    <value>{0} (compartidos por {1} llamadas)</value>
+    <comment>{0} = token usage text, {1} = number of calls of the batch (more than one).</comment>
+  </data>
+  <data name="TokensFormat" xml:space="preserve">
+    <value>entrada {0} · salida {1} · caché leída {2} · caché creada {3}</value>
+    <comment>{0} = input tokens, {1} = output tokens, {2} = cache read tokens, {3} = cache creation tokens.</comment>
+  </data>
+  <data name="ThinkingHead_One" xml:space="preserve">
+    <value>Razonamiento · {0} paso</value>
+    <comment>{0} = number of reasoning steps (singular).</comment>
+  </data>
+  <data name="ThinkingHead_Other" xml:space="preserve">
+    <value>Razonamiento · {0} pasos</value>
+    <comment>{0} = number of reasoning steps (plural).</comment>
+  </data>
+  <data name="NoteSaidFormat" xml:space="preserve">
+    <value>Dijo: {0}</value>
+    <comment>{0} = text the agent said before the batch.</comment>
+  </data>
+  <data name="InputLabel" xml:space="preserve">
+    <value>Entrada</value>
+    <comment>Header of the input of a step.</comment>
+  </data>
+  <data name="OutputLabel" xml:space="preserve">
+    <value>Salida</value>
+    <comment>Header of the output of a step.</comment>
+  </data>
+  <data name="PromptLabel" xml:space="preserve">
+    <value>Petición</value>
+    <comment>The user prompt: header in the turn detail and subtitle of the prompt card.</comment>
+  </data>
+  <data name="AnswerLabel" xml:space="preserve">
+    <value>Respuesta</value>
+    <comment>The agent answer: header in the turn detail and subtitle of the answer card.</comment>
+  </data>
+  <data name="TurnStateClosed" xml:space="preserve">
+    <value>terminado</value>
+    <comment>Turn state.</comment>
+  </data>
+  <data name="TurnStateOpen" xml:space="preserve">
+    <value>sin cierre (en curso o interrumpido)</value>
+    <comment>Turn state.</comment>
+  </data>
+  <data name="StepsWithErrors_One" xml:space="preserve">
+    <value>{0} ({1} error)</value>
+    <comment>{0} = number of steps, {1} = number of errors (singular).</comment>
+  </data>
+  <data name="StepsWithErrors_Other" xml:space="preserve">
+    <value>{0} ({1} errores)</value>
+    <comment>{0} = number of steps, {1} = number of errors (plural).</comment>
+  </data>
+  <data name="ExternalChanges_One" xml:space="preserve">
+    <value>{0} archivo sin llamada que lo explique</value>
+    <comment>{0} = number of files (singular).</comment>
+  </data>
+  <data name="ExternalChanges_Other" xml:space="preserve">
+    <value>{0} archivos sin llamada que los explique</value>
+    <comment>{0} = number of files (plural).</comment>
+  </data>
+  <data name="TurnTitleFormat" xml:space="preserve">
+    <value>Turno {0}</value>
+    <comment>{0} = turn number (from 1).</comment>
+  </data>
+  <data name="TurnContinuationTitleFormat" xml:space="preserve">
+    <value>Turno {0} · continuación</value>
+    <comment>{0} = turn number; a turn without a prompt.</comment>
+  </data>
+  <data name="TurnPromptTitleFormat" xml:space="preserve">
+    <value>Turno {0} · {1}</value>
+    <comment>{0} = turn number, {1} = first line of the prompt.</comment>
+  </data>
+  <data name="TurnPartContinuation" xml:space="preserve">
+    <value>continuación</value>
+    <comment>Part of a turn band label: the turn has no prompt.</comment>
+  </data>
+  <data name="TurnPartUnclosed" xml:space="preserve">
+    <value>sin cierre</value>
+    <comment>Part of a turn band label: the turn has no end mark.</comment>
+  </data>
+  <data name="KindRead" xml:space="preserve">
+    <value>lectura</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="KindWrite" xml:space="preserve">
+    <value>escritura</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="KindExecute" xml:space="preserve">
+    <value>ejecución</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="KindSearch" xml:space="preserve">
+    <value>búsqueda</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="KindDelegate" xml:space="preserve">
+    <value>delegación en un subagente</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="KindOther" xml:space="preserve">
+    <value>otra</value>
+    <comment>Kind of a tool call.</comment>
+  </data>
+  <data name="StateRunning" xml:space="preserve">
+    <value>en curso</value>
+    <comment>State of a step in the detail panel.</comment>
+  </data>
+  <data name="StateOk" xml:space="preserve">
+    <value>correcto</value>
+    <comment>State of a step in the detail panel.</comment>
+  </data>
+  <data name="StateError" xml:space="preserve">
+    <value>error</value>
+    <comment>State of a step in the detail panel.</comment>
+  </data>
+  <data name="StateNoResult" xml:space="preserve">
+    <value>sin resultado (el turno terminó antes)</value>
+    <comment>State of a step in the detail panel.</comment>
+  </data>
+  <data name="TruncatedFormat" xml:space="preserve">
+    <value>… (truncado: {0} caracteres más)</value>
+    <comment>{0} = number of characters left out of the output.</comment>
+  </data>
+  <data name="CountSteps_One" xml:space="preserve">
+    <value>{0} paso</value>
+    <comment>{0} = number of steps (singular).</comment>
+  </data>
+  <data name="CountSteps_Other" xml:space="preserve">
+    <value>{0} pasos</value>
+    <comment>{0} = number of steps (plural).</comment>
+  </data>
+  <data name="CountErrors_One" xml:space="preserve">
+    <value>{0} error</value>
+    <comment>{0} = number of errors (singular).</comment>
+  </data>
+  <data name="CountErrors_Other" xml:space="preserve">
+    <value>{0} errores</value>
+    <comment>{0} = number of errors (plural).</comment>
+  </data>
+  <data name="CountTurns_One" xml:space="preserve">
+    <value>{0} turno</value>
+    <comment>{0} = number of turns (singular).</comment>
+  </data>
+  <data name="CountTurns_Other" xml:space="preserve">
+    <value>{0} turnos</value>
+    <comment>{0} = number of turns (plural).</comment>
+  </data>
+  <data name="CountSubagents_One" xml:space="preserve">
+    <value>{0} subagente</value>
+    <comment>{0} = number of subagents (singular).</comment>
+  </data>
+  <data name="CountSubagents_Other" xml:space="preserve">
+    <value>{0} subagentes</value>
+    <comment>{0} = number of subagents (plural).</comment>
+  </data>
+  <data name="FoldedClickToExpand" xml:space="preserve">
+    <value>Clic para desplegar</value>
+    <comment>Last line of the tooltip of a folded turn.</comment>
+  </data>
+  <data name="GraphEmpty" xml:space="preserve">
+    <value>Aún no hay actividad del agente en esta sesión</value>
+    <comment>Empty state drawn on the graph canvas.</comment>
+  </data>
+  <data name="ZoomOutTooltip" xml:space="preserve">
+    <value>Alejar (Ctrl + rueda)</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="ZoomInTooltip" xml:space="preserve">
+    <value>Acercar (Ctrl + rueda)</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="ZoomPercentFormat" xml:space="preserve">
+    <value>{0} %</value>
+    <comment>{0} = zoom as a percentage (integer).</comment>
+  </data>
+  <data name="FollowButton" xml:space="preserve">
+    <value>Seguir el final</value>
+    <comment>Button text.</comment>
+  </data>
+  <data name="FollowTooltip" xml:space="preserve">
+    <value>Ir al último paso y seguir la sesión en vivo</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="CollapseAllTooltip" xml:space="preserve">
+    <value>Plegar todos los turnos</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="ExpandAllTooltip" xml:space="preserve">
+    <value>Desplegar todos los turnos (clic en la cabecera de un turno para uno solo)</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="ErrorsOnlyButton" xml:space="preserve">
+    <value>Solo errores</value>
+    <comment>Toggle text.</comment>
+  </data>
+  <data name="ErrorsOnlyTooltip" xml:space="preserve">
+    <value>Atenuar todo lo que no haya fallado</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="HideReadsButton" xml:space="preserve">
+    <value>Sin lecturas</value>
+    <comment>Toggle text.</comment>
+  </data>
+  <data name="HideReadsTooltip" xml:space="preserve">
+    <value>Atenuar las lecturas</value>
+    <comment>Tooltip.</comment>
+  </data>
+  <data name="VerticalButton" xml:space="preserve">
+    <value>Vertical</value>
+    <comment>Toggle text.</comment>
+  </data>
+  <data name="VerticalTooltip" xml:space="preserve">
+    <value>Vertical: el tiempo avanza hacia abajo. Desactivado: de izquierda a derecha</value>
+    <comment>Tooltip.</comment>
+  </data>
+</root>

@@ -1,0 +1,33 @@
+name: Support for a new agent
+description: Request or offer an adapter for another coding agent
+labels: [adapter]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Guide to writing an adapter: `docs/ADAPTERS.md`. **Attach only synthetic or cleaned traces**: real traces may
+        contain secrets and the application does not hide them.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and version
+      placeholder: Codex CLI 0.x, Gemini CLI, Aider…
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where the agent stores its traces (path and format)
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Trace excerpt (cleaned)
+      render: text
+  - type: checkboxes
+    id: collaboration
+    attributes:
+      label: Collaboration
+      options:
+        - label: I would like to implement the adapter myself
