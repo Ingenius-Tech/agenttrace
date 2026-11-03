@@ -102,8 +102,8 @@ Stack: .NET 10 LTS, Avalonia (+ AvaloniaEdit), xUnit v3, System.Text.Json, DiffP
 
 All .NET commands are run **from the repository root** (the solution is `AgentTrace.slnx`; the test runner is pinned in `global.json`):
 - Build: `dotnet build AgentTrace.slnx`
-- Unit tests: `dotnet test --solution AgentTrace.slnx --filter-not-trait "Category=Integration" --filter-not-trait "Category=Acceptance" --filter-not-trait "Category=Parity"`
-- Everything (integration, acceptance and parity are skipped without their variables): `dotnet test --solution AgentTrace.slnx`
+- Unit tests: `dotnet test --solution AgentTrace.slnx --filter-not-trait "Category=Integration" --filter-not-trait "Category=Acceptance"`
+- Everything (acceptance tests skip themselves without their variables): `dotnet test --solution AgentTrace.slnx`
 - CI (`.github/workflows/ci.yml`, one job per operating system, its name is the required check of the branch rulesets): build, unit tests (all projects but the UI one), end-to-end tests (`tests/AgentTrace.Desktop.Tests`, headless) and integration and acceptance tests. A pull request is merged only with the three systems green.
 - One project or one class: `dotnet test --project tests/AgentTrace.Presentation.Tests --filter-class "*ProjectTreeIT"`
 - Run: `dotnet run --project src/AgentTrace.Desktop -- <project> [--open=<f>] [--diff=<f>] [--tab=graph|diff|telemetry|file|knowledge|heatmap] [--kg-select=<f>] [--graph-select=<callId>|turn:<n>|last|last-error] [--graph-collapse=none|old] [--graph-orientation=vertical|horizontal] [--graph-filter=errors,reads] [--graph-zoom=<0.25..2>] [--kg-view=2d|3d|top|side] [--kg-yaw=<degrees>] [--kg-pitch=<degrees>] [--heatmap-zoom=<folder>] [--heatmap-filter=reads,writes,errors] [--heatmap-area=size|activity] [--heatmap-select=<f>] [--search=<text>] [--lang=en|es]`
