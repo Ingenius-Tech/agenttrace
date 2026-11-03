@@ -46,6 +46,6 @@ C# specifics: `AgentEvent` is an `abstract record` with sealed nested records (`
 
 `FileChanged` and `FileRead` carry the path as the agent gives it (the core normalizes it). `FileRead` is optional: emit it
 when the agent reads a file with a read tool (the path is usually in the call's input, not in the
-result). Reads done by a console command (`cat`) are not detected and there is no need to try.
+result). Reads done by a console command (`cat`) are not detected and there is no need to try. Neither is there any need to detect the files a console command writes: the Knowledge graph and the Heatmap also take the changes git reports for the observed repositories (attributed by `ChangeCorrelator`), so an adapter only has to emit `FileChanged` for its file tools.
 `FileChanged.Kind` is `Created` only if the file did not exist: use the agent's explicit signal if it gives one and, when in doubt, `Modified` (created is the stronger claim). In Claude Code: the result's `type`; without it, `Write` creates if there is no `originalFile`, and `Edit`/`MultiEdit` only with an empty `old_string`.
 If an agent provides something that does not fit, adding a new variant is discussed: it must be useful for more than one agent.

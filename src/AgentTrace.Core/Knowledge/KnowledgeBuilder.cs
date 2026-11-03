@@ -29,6 +29,9 @@ public sealed class KnowledgeBuilder
     private int _turns;
     private bool _turnOpen;
 
+    /// <summary>What git reports as changed, with its attribution (see <see cref="SetChanges"/>).</summary>
+    private IReadOnlyList<ChangeEntry> _gitChanges = [];
+
     /// <summary>What was read in this turn, in order.</summary>
     private readonly OrderedSet<FilePath> _turnReads = new();
 
@@ -79,11 +82,59 @@ public sealed class KnowledgeBuilder
         }
     }
 
+    /// <summary>
+    /// Replaces the changes git reports (all the observed repositories) with their attribution. They are state, not events: each call
+    /// gives the whole current list. They cover what the trace cannot see, such as files written by a console command.
+    /// </summary>
+    public void SetChanges(IReadOnlyList<ChangeEntry> changes) => _gitChanges = changes;
+
     public KnowledgeGraph Snapshot()
     {
         List<KnowledgeGraph.Node> nodeList = _nodes.Entries.Select(e => e.Value.Freeze(e.Key)).ToList();
+        int turns = AddGitChanges(nodeList);
         List<Edge> edgeList = _edges.Entries.Select(e => new Edge(e.Key.From, e.Key.To, e.Key.Relation, e.Value)).ToList();
-        return new KnowledgeGraph(nodeList.ToValueList(), edgeList.ToValueList(), _turns, _unplacedErrors, _targetsKnown);
+        return new KnowledgeGraph(nodeList.ToValueList(), edgeList.ToValueList(), turns, _unplacedErrors, _targetsKnown);
+    }
+
+    /// <summary>
+    /// Adds what git reports and the trace did not: a file whose change the trace already reported is left alone. The change counts as the
+    /// agent's if the attribution points at calls, and as external otherwise (also if undated). It belongs to the last turn (the first if there
+    /// is none) and creates no relations. Returns the number of turns of the graph.
+    /// </summary>
+    private int AddGitChanges(List<KnowledgeGraph.Node> nodes)
+    {
+        Dictionary<FilePath, int> index = [];
+        for (int i = 0; i < nodes.Count; i++) index[nodes[i].Path] = i;
+        int turns = _turns;
+        foreach (ChangeEntry entry in _gitChanges)
+        {
+            FilePath path = entry.Change.Path;
+            if (NotFollowed(path)) continue;
+            bool known = index.TryGetValue(path, out int at);
+            if (known && nodes[at].Changed) continue;
+            turns = Math.Max(turns, 1);
+            int turn = turns - 1;
+            ChangeKind kind = entry.Change.Kind;
+            bool byAgent = entry.Attribution.Confidence is Confidence.Exact or Confidence.Probable or Confidence.Ambiguous;
+            KnowledgeGraph.Node current = known
+                ? nodes[at]
+                : new KnowledgeGraph.Node(path, null, 0, 0, 0, 0, 0, 1, turn, turn);
+            KnowledgeGraph.Node changed = current with
+            {
+                LastChange = kind,
+                Created = current.Created + (byAgent && kind == ChangeKind.Created ? 1 : 0),
+                Modified = current.Modified + (byAgent && kind == ChangeKind.Modified ? 1 : 0),
+                Deleted = current.Deleted + (byAgent && kind == ChangeKind.Deleted ? 1 : 0),
+                External = current.External + (byAgent ? 0 : 1),
+            };
+            if (known) nodes[at] = changed;
+            else
+            {
+                index[path] = nodes.Count;
+                nodes.Add(changed);
+            }
+        }
+        return turns;
     }
 
     private bool NotFollowed(FilePath path) => _projectRoot is { } root && (!path.IsUnder(root) || ProjectPaths.IsHidden(root, path));

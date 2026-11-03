@@ -379,6 +379,7 @@ public sealed partial class MainWindow
         _searchWindow?.Refresh();
         _flow = new FlowBuilder();
         _knowledgeBuilder = new KnowledgeBuilder(CurrentProject);
+        _knowledgeBuilder.SetChanges(_lastChanges);
         _knowledge.SetProjectRoot(CurrentProject);
         _knowledge.SetGraph(_knowledgeBuilder.Snapshot());
         _graph.SetGraph(_flow.Snapshot());
@@ -593,7 +594,14 @@ public sealed partial class MainWindow
         _pendingKnowledgeSelect = null;
     }
 
-    private void OnChangesForAnalysis(IReadOnlyList<ChangeEntry> changes) => _graph.SetChanges(changes);
+    /// <summary>The changes git reports also feed the knowledge graph and the heatmap: the trace does not see what a console command writes.</summary>
+    private void OnChangesForAnalysis(IReadOnlyList<ChangeEntry> changes)
+    {
+        _graph.SetChanges(changes);
+        _knowledgeBuilder.SetChanges(changes);
+        ScheduleKnowledgeRefresh();
+        ScheduleHeatmapRefresh();
+    }
 
     /// <summary>Repaints the graph at most every 250 ms: bursts of events are grouped.</summary>
     private void ScheduleGraphRefresh()
