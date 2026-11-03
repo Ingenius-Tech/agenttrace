@@ -6,8 +6,10 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using AgentTrace.Adapters.ClaudeCode;
 using AgentTrace.Core;
+using AgentTrace.Core.Knowledge;
 using AgentTrace.Core.Search;
 using AgentTrace.Desktop.Controls;
+using AgentTrace.Presentation.Heatmap;
 using AgentTrace.Presentation.Observation;
 using AgentTrace.Presentation.Resources;
 using AgentTrace.Testing;
@@ -145,10 +147,10 @@ public sealed class MainWindowTests : TempDirTestBase
             Save(window, "main-heatmap-live");
 
             // The knowledge is only computed with its tab in view, and only counts the project's files: the synthetic trace
-            // touches files elsewhere (C:\p\…), so the graph is empty and says so
+            // touches files elsewhere (C:\p\…), so only what git reports (the new file, nobody's call explains it) is in the graph
             window.SwitchTab(MainWindow.KnowledgeTab);
-            Pump("the knowledge graph", () => window.Knowledge.Summary.StartsWith("0 ", StringComparison.Ordinal));
-            Assert.Empty(window.Knowledge.Canvas.Graph.Nodes);
+            Pump("the knowledge graph", () => window.Knowledge.Canvas.Graph.FindNode(repo.Dir.Combine("new.txt")) is { OnlyExternal: true });
+            Assert.Single(window.Knowledge.Canvas.Graph.Nodes);
 
             // A real change on disk appears in the Inspector and its diff has the expected rows
             File.WriteAllText(repo.Dir.Combine("README.md").Value, "# Project\nnew line ñ\n"); // lang-ok: non-ASCII content
@@ -204,6 +206,49 @@ public sealed class MainWindowTests : TempDirTestBase
             window.SwitchTab(MainWindow.DiffTab);
             Dispatcher.UIThread.RunJobs();
             Save(window, "main-multirepo");
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task FilesWrittenOutsideTheTraceInTwoRepositoriesReachTheKnowledgeGraphAndTheHeatmap()
+    {
+        Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
+        FilePath root = Dir.Combine("project");
+        GitFixture api = GitFixture.Init(root.Combine("api"));
+        api.Write("Program.cs", "class Api { }\n");
+        api.CommitAll("base");
+        GitFixture web = GitFixture.Init(root.Combine("web"));
+        web.Write("index.html", "<h1>hello</h1>\n");
+        web.CommitAll("base");
+        FilePath trace = new FilePath(AppContext.BaseDirectory).Combine("TestData", "claude", "projects", "D--fake-proj", Session + ".jsonl");
+        var recent = new RecentProjects(Dir.Combine("history.txt"));
+
+        return HeadlessHost.Run(() =>
+        {
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            window.Show();
+            window.OpenProject(root);
+            Pump("the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "api"));
+            window.SwitchTab(MainWindow.KnowledgeTab);
+            // What a console command (sed, a redirection...) writes is not in the trace: only git sees it. As in the test above, the
+            // baseline moment cannot be observed, so the files are rewritten until both appear
+            int version = 0;
+            Pump("both changed files in the Knowledge graph", () =>
+            {
+                version++;
+                WriteText(api.Dir.Combine("Program.cs").Value, "class Api { int x" + version + "; }\n");
+                WriteText(web.Dir.Combine("index.html").Value, "<h1>goodbye " + version + "</h1>\n");
+                KnowledgeGraph graph = window.Knowledge.Canvas.Graph;
+                return graph.FindNode(api.Dir.Combine("Program.cs")) is { Changed: true } && graph.FindNode(web.Dir.Combine("index.html")) is { Changed: true };
+            }, 25_000);
+
+            window.SwitchTab(MainWindow.HeatmapTab);
+            Pump("the heat of both files in the Heatmap", () =>
+            {
+                HeatTree? tree = window.Heatmap.Canvas.Tree;
+                return tree?.Find(api.Dir.Combine("Program.cs"))?.Activity.Writes > 0 && tree.Find(web.Dir.Combine("index.html"))?.Activity.Writes > 0;
+            }, 25_000);
             window.Close();
         });
     }

@@ -12,7 +12,7 @@ public abstract class GitTestBase : IDisposable
     protected GitTestBase()
     {
         Assert.SkipUnless(GitFixture.GitAvailable(), "These tests need git installed");
-        Tmp = new FilePath(Path.Combine(Path.GetTempPath(), "agenttrace-git-" + Guid.NewGuid().ToString("N")));
+        Tmp = new FilePath(Path.Combine(TestPaths.TempRoot(), "agenttrace-git-" + Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(Tmp.Value);
     }
 

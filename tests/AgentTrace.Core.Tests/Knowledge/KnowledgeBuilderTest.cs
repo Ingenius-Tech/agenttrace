@@ -303,6 +303,95 @@ public sealed class KnowledgeBuilderTest
         Assert.Equal(3, g.Edges.Count);
     }
 
+    private static ChangeEntry Git(FilePath p, ChangeKind kind, Confidence confidence = Confidence.None) =>
+        new(new FileChange(p, kind, null), new Attribution(confidence, ValueList<ToolCall>.Empty));
+
+    [Fact]
+    public void ChangesGitReportsAppearEvenWithoutAnyEvent()
+    {
+        var b = new KnowledgeBuilder();
+        b.SetChanges([Git(A, ChangeKind.Modified), Git(B, ChangeKind.Created)]);
+        KnowledgeGraph g = b.Snapshot();
+
+        Assert.Equal(1, g.Turns);
+        Node a = g.FindNode(A)!;
+        Assert.Equal(1, a.External);
+        Assert.Equal(ChangeKind.Modified, a.LastChange);
+        Assert.Equal(1, a.TurnsTouched);
+        Assert.True(a.OnlyExternal);
+        Assert.Equal(2, g.Nodes.Count);
+        Assert.Empty(g.Edges);
+    }
+
+    [Fact]
+    public void AChangeAttributedToCallsCountsAsTheAgents()
+    {
+        var b = new KnowledgeBuilder();
+        b.SetChanges([Git(A, ChangeKind.Modified, Confidence.Probable), Git(B, ChangeKind.Created, Confidence.Exact), Git(C, ChangeKind.Deleted, Confidence.Undated)]);
+        KnowledgeGraph g = b.Snapshot();
+
+        Assert.Equal(1, g.FindNode(A)!.Modified);
+        Assert.Equal(1, g.FindNode(B)!.Created);
+        Assert.Equal(0, g.FindNode(A)!.External);
+        Assert.Equal(1, g.FindNode(C)!.External); // undated: nobody can be blamed
+    }
+
+    [Fact]
+    public void AFileTheTraceAlreadyChangedIsNotCountedTwice()
+    {
+        var b = new KnowledgeBuilder();
+        b.Accept(User());
+        b.Accept(Change(A, ChangeKind.Modified));
+        b.SetChanges([Git(A, ChangeKind.Modified, Confidence.Exact)]);
+        KnowledgeGraph g = b.Snapshot();
+
+        Assert.Equal(1, g.FindNode(A)!.Modified);
+        Assert.Equal(0, g.FindNode(A)!.External);
+    }
+
+    [Fact]
+    public void AReadFileThatGitSaysChangedGainsTheChangeAndKeepsItsTurns()
+    {
+        var b = new KnowledgeBuilder();
+        b.Accept(User());
+        b.Accept(Read(A));
+        b.Accept(new TurnEnded(H(null), null));
+        b.Accept(User());
+        b.SetChanges([Git(A, ChangeKind.Modified, Confidence.Probable)]);
+        Node a = b.Snapshot().FindNode(A)!;
+
+        Assert.Equal(1, a.Reads);
+        Assert.Equal(1, a.Modified);
+        Assert.Equal(1, a.TurnsTouched);
+        Assert.Equal(0, a.FirstTurn);
+    }
+
+    [Fact]
+    public void TheListIsReplacedNotAccumulated()
+    {
+        var b = new KnowledgeBuilder();
+        b.SetChanges([Git(A, ChangeKind.Modified)]);
+        b.Snapshot();
+        b.SetChanges([Git(B, ChangeKind.Modified)]);
+        KnowledgeGraph g = b.Snapshot();
+
+        Assert.Null(g.FindNode(A));
+        Assert.NotNull(g.FindNode(B));
+    }
+
+    [Fact]
+    public void ChangesOutsideTheProjectOrHiddenAreIgnored()
+    {
+        FilePath root = new(OperatingSystem.IsWindows() ? @"C:\proj" : "/proj");
+        var b = new KnowledgeBuilder(root);
+        b.SetChanges([Git(root.Combine("sub", "x.cs"), ChangeKind.Modified), Git(root.Combine(".github", "w.yml"), ChangeKind.Modified),
+            Git(new FilePath(OperatingSystem.IsWindows() ? @"C:\other\y.cs" : "/other/y.cs"), ChangeKind.Modified)]);
+        KnowledgeGraph g = b.Snapshot();
+
+        Assert.Single(g.Nodes);
+        Assert.Equal(root.Combine("sub", "x.cs"), g.Nodes[0].Path);
+    }
+
     [Fact]
     public void GraphsWithTheSameContentAreEqual()
     {

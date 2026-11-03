@@ -81,8 +81,17 @@ public sealed class GitRepositoryTest : GitTestBase
         }
         else
         {
-            GitException e = Assert.Throws<GitException>(() => GitRepository.Init(cli, dir, true));
-            Assert.Contains("git", e.Message);
+            // Without a configured identity git either refuses (Linux, Windows) or guesses one from the system (macOS):
+            // the only thing that must hold is that a refusal is reported as a GitException
+            try
+            {
+                GitRepository.Init(cli, dir, true);
+                Assert.NotNull(repo.HeadSha());
+            }
+            catch (GitException e)
+            {
+                Assert.Contains("git", e.Message);
+            }
         }
     }
 
