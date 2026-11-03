@@ -5,14 +5,22 @@ on:
     branches: [main, development]
   pull_request:
     branches: [main, development]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# A newer push to a pull request makes its running check obsolete; pushes to main and development always finish
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # The job name is the required status check of the branch rulesets (one per operating system): do not rename it.
   build-and-test:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -24,9 +32,32 @@ jobs:
           global-json-file: global.json
       - name: Build
         run: dotnet build AgentTrace.slnx
+      # Every test project except the UI one, without the tests that need a real agent session
       - name: Unit tests
         run: >
           dotnet test --solution AgentTrace.slnx
           --filter-not-trait "Category=Integration"
           --filter-not-trait "Category=Acceptance"
-          --filter-not-trait "Category=Parity"
+          --filter-not-namespace "AgentTrace.Desktop.Tests"
+      # The whole application driven headless (windows, tabs, keyboard, observer with real git)
+      - name: End-to-end tests (UI)
+        if: ${{ !cancelled() }}
+        run: dotnet test --project tests/AgentTrace.Desktop.Tests
+      # Real files, real git and the real trace reader. Acceptance tests skip themselves without
+      # their AGENTTRACE_* variables and the ones that need a real Claude Code session skip on a runner.
+      # Exit code 8 ("zero tests ran") is ignored: most test projects have no integration test
+      - name: Integration and acceptance tests
+        if: ${{ !cancelled() }}
+        run: >
+          dotnet test --solution AgentTrace.slnx
+          --filter-trait "Category=Integration"
+          --filter-trait "Category=Acceptance"
+          --ignore-exit-code 8
+      - name: Upload UI captures
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-captures-${{ matrix.os }}
+          path: artifacts/bin/AgentTrace.Desktop.Tests/debug/captures
+          if-no-files-found: ignore
+          retention-days: 7
