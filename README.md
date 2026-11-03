@@ -33,14 +33,14 @@ Something like an IDE focused only on **traceability and monitoring**. It lets y
 Early prototype. When you open a project:
 
 * **File tree**, IDE-style: icons by type, folders first, lazy loading and live refresh; each file is colored
-according to what happened to it (created `+` green, modified `\~` amber, deleted `−` red and struck through, still
+according to what happened to it (created `+` green, modified `~` amber, deleted `−` red and struck through, still
 visible as a "ghost"), with a filled badge if the agent did it, an outlined one if it is external, and an eye if the agent
 read it. Folders show the total number of changes they contain. It only expands as far as the changes; buttons to
 expand, collapse and show only what changed; context menu and "Show in tree" from the Inspector.
 * **Diff inspector**: live list of the files that change on disk (via `git`), with their diff, and which agent action
 each change is attributed to (exact `←`, probable `≈`, ambiguous `?` or external), comparing from the start of the
 observation or against `HEAD`. If the folder is not a repository but **contains several in its subfolders** (up to three
-levels; without descending into a repository or into `node\_modules`, `target`, `.venv`, `bin` or `obj`), it observes all of them at
+levels; without descending into a repository or into `node_modules`, `target`, `.venv`, `bin` or `obj`), it observes all of them at
 once: a single list of changes, and each diff comes from its own repository. If there are none, it offers to create one (only with your
 confirmation) or continues without git ("Continue without git"): only the trace actions are shown, without diffs.
 * **Process telemetry**: follows the active Claude Code session live (messages, tools, results, touched files,
@@ -61,7 +61,7 @@ unfold), and the "Errors only" and "Hide reads" filters dim what you do not care
 detail also includes the files git attributes to it by time (marked "(git)").
 * **Knowledge** (`Ctrl+5`): graph of the project files the agent has touched and how they relate, computed only
 from the traces (without analyzing code, so it works for any language). Each file is a node with the same color
-code as the tree (created `+` green, modified `\~` amber, deleted `−` red, read with a blue eye; dashed outline if the
+code as the tree (created `+` green, modified `~` amber, deleted `−` red, read with a blue eye; dashed outline if the
 change was external) and its size grows with what was touched. A line joins the files the agent changed in the same turn and a
 dashed arrow goes from what it read before editing to what was edited. It updates live (every second, without the drawing
 jumping), with wheel zoom, dragging, search by name, "Changed only" and "Repeated relations"; clicking a
@@ -79,11 +79,11 @@ menu offers open, view diff, show in tree, view in "Knowledge" and zoom in. It u
 * **Search** (`Ctrl+K`): modeless window that searches everything that happened in the active session (requests, answers,
 reasoning, tools with their input and output, errors and files), case- and accent-insensitive, with filters by
 type, thread (main or subagents) and turn. Enter or a double click takes you to the graph's step or turn, or opens the file.
-* **Terminal** (`Ctrl+T`): opens the system terminal in the project folder (`AGENTTRACE\_TERMINAL` to choose another one). The application
+* **Terminal** (`Ctrl+T`): opens the system terminal in the project folder (`AGENTTRACE_TERMINAL` to choose another one). The application
 does not include a terminal of its own.
 
 The window remembers the last project: it opens on its own when started without arguments, the "Open Project..." button proposes that folder and its arrow lists the
-recent ones (stored in `\~/.agenttrace-studio/recent-projects.txt`). The bottom bar summarizes the session (events, turns, tools, errors, files, external,
+recent ones (stored in `~/.agenttrace-studio/recent-projects.txt`). The bottom bar summarizes the session (events, turns, tools, errors, files, external,
 subagents and tokens) with the color code. On Windows the native title bar takes the application's color.
 
 Supported agents: Claude Code (to add others: `docs/ADAPTERS.md`).
@@ -108,17 +108,17 @@ To add a language:
 
 ## Stack and usage
 
-The project is written in C# (.NET 10 LTS) with Avalonia (dark theme, AvaloniaEdit for the viewer), xUnit v3, System.Text.Json and DiffPlex. It was born in Java/JavaFX and migrated with verified parity (plan 013); the Java was retired in plan 014 and remains under the `java-final` git tag.
+The project is written in C# (.NET 10 LTS) with Avalonia (dark theme, AvaloniaEdit for the viewer), xUnit v3, System.Text.Json and DiffPlex.
 
 ```bash
 dotnet run --project src/AgentTrace.Desktop -- <project>              # run (opens the last project if none is given)
 dotnet test --solution AgentTrace.slnx                                # tests (integration and acceptance are skipped without their variables)
-dotnet publish src/AgentTrace.Desktop -c Release -r win-x64 -o artifacts/publish/win-x64   # a single self-contained .exe (\~49 MB)
+dotnet publish src/AgentTrace.Desktop -c Release -r win-x64 -o artifacts/publish/win-x64   # a single self-contained .exe (~49 MB)
 ```
 
-Requirements: .NET 10 SDK and `git` (without it, only the trace actions are shown, without diffs; another executable can be given with `AGENTTRACE\_GIT=<path>`).
+Requirements: .NET 10 SDK and `git` (without it, only the trace actions are shown, without diffs; another executable can be given with `AGENTTRACE_GIT=<path>`).
 Arguments: `<project>`, `--open`, `--diff`, `--tab`, `--kg-select`, `--graph-select`, `--graph-collapse`, `--graph-orientation`,
-`--graph-filter`, `--graph-zoom`, `--kg-view=2d|3d|top|side`, `--kg-yaw`, `--kg-pitch`, `--search=<text>`, `--lang=en|es` and, to check the window without a mouse, `--capture=<png> \[--capture-delay=<ms>] \[--capture-mode=printwindow] \[--render=software]`.
+`--graph-filter`, `--graph-zoom`, `--kg-view=2d|3d|top|side`, `--kg-yaw`, `--kg-pitch`, `--search=<text>`, `--lang=en|es` and, to check the window without a mouse, `--capture=<png> [--capture-delay=<ms>] [--capture-mode=printwindow] [--render=software]`.
 Shortcuts: `Ctrl+O` open project, `Ctrl+1`…`Ctrl+6` switch tab, `Ctrl+K` search, `Ctrl+T` open a system terminal in the project folder. Synthetic traces and tests are in `tests/`.
 
 ```
@@ -136,12 +136,12 @@ tests/                            Unit, integration, acceptance and UI (headless
 ## Structure
 
 ```
-AgentTrace.slnx   .NET solution (global.json, Directory.\*.props)
+AgentTrace.slnx   .NET solution (global.json, Directory.*.props)
 src/, tests/      Code and tests (structure in "Stack and usage")
 docs/ADAPTERS.md  How to add an agent
 LICENSE, NOTICE   Apache 2.0 license and attribution notice
-THIRD\_PARTY\_NOTICES.md  Licenses of the third-party components
-CONTRIBUTING.md, CODE\_OF\_CONDUCT.md, SECURITY.md   Collaboration, conduct and security
+THIRD_PARTY_NOTICES.md  Licenses of the third-party components
+CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md   Collaboration, conduct and security
 .github/          Continuous integration, issue and pull request templates
 CLAUDE.md         The assistant's working instructions
 ```
@@ -165,4 +165,5 @@ under the same terms (section 5).
 ## Third-party credits
 
 Avalonia (MIT), AvaloniaEdit (MIT), DiffPlex (Apache 2.0) and the codicons icon font (CC BY 4.0), bundled in `Assets/`, among
-others. Full list and attributions in [`THIRD\_PARTY\_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+others. Full list and attributions in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+

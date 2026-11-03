@@ -136,8 +136,16 @@ public sealed class MainWindowTests : TempDirTestBase
             Assert.NotNull(window.Heatmap.Canvas.Tree!.Find(repo.Dir.Combine("src", "Program.cs")));
             Assert.Null(window.Heatmap.Canvas.Tree.Find(repo.Dir.Combine("new.txt")));
             int files = window.Heatmap.Canvas.Tree.Root.Files;
-            File.WriteAllText(repo.Dir.Combine("new.txt").Value, "just created\n");
-            Pump("the new file in the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "new.txt"), 20_000);
+            // The watcher and the git baseline start asynchronously and a file written before them raises no event (and is not a change):
+            // the file is rewritten with different content until the application sees it
+            int version = 0;
+            void WriteNewFile() => WriteText(repo.Dir.Combine("new.txt").Value, "just created " + (++version) + "\n");
+            WriteNewFile();
+            Pump("the new file in the tree", () =>
+            {
+                WriteNewFile();
+                return window.Tree.VisibleNodes().Any(n => n.Node.Name == "new.txt");
+            }, 20_000);
             // The 1 s timer refresh does not run in the headless dispatcher (the 300 ms ones do): the repaint is requested by coming back to the tab
             window.SwitchTab(MainWindow.GraphTab);
             window.SwitchTab(MainWindow.HeatmapTab);
@@ -149,7 +157,11 @@ public sealed class MainWindowTests : TempDirTestBase
             // The knowledge is only computed with its tab in view, and only counts the project's files: the synthetic trace
             // touches files elsewhere (C:\p\…), so only what git reports (the new file, nobody's call explains it) is in the graph
             window.SwitchTab(MainWindow.KnowledgeTab);
-            Pump("the knowledge graph", () => window.Knowledge.Canvas.Graph.FindNode(repo.Dir.Combine("new.txt")) is { OnlyExternal: true });
+            Pump("the knowledge graph", () =>
+            {
+                WriteNewFile();
+                return window.Knowledge.Canvas.Graph.FindNode(repo.Dir.Combine("new.txt")) is { OnlyExternal: true };
+            }, 20_000);
             Assert.Single(window.Knowledge.Canvas.Graph.Nodes);
 
             // A real change on disk appears in the Inspector and its diff has the expected rows
