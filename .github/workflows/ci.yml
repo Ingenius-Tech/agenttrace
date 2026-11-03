@@ -44,13 +44,15 @@ jobs:
         if: ${{ !cancelled() }}
         run: dotnet test --project tests/AgentTrace.Desktop.Tests
       # Real files, real git and the real trace reader. Acceptance tests skip themselves without
-      # their AGENTTRACE_* variables and the ones that need a real Claude Code session skip on a runner
+      # their AGENTTRACE_* variables and the ones that need a real Claude Code session skip on a runner.
+      # Exit code 8 ("zero tests ran") is ignored: most test projects have no integration test
       - name: Integration and acceptance tests
         if: ${{ !cancelled() }}
         run: >
           dotnet test --solution AgentTrace.slnx
           --filter-trait "Category=Integration"
           --filter-trait "Category=Acceptance"
+          --ignore-exit-code 8
       - name: Upload UI captures
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
