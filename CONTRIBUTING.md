@@ -32,7 +32,7 @@ Requirements: **.NET 10 SDK** and `git`. All commands run from the repository ro
 
 ```bash
 dotnet build AgentTrace.slnx
-dotnet test --solution AgentTrace.slnx --filter-not-trait "Category=Integration" --filter-not-trait "Category=Acceptance" --filter-not-trait "Category=Parity"
+dotnet test --solution AgentTrace.slnx --filter-not-trait "Category=Integration" --filter-not-trait "Category=Acceptance"
 dotnet run --project src/AgentTrace.Desktop -- <project>
 ```
 
