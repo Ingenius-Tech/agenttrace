@@ -9,7 +9,7 @@ public abstract class TempDirTestBase : IDisposable
 
     protected TempDirTestBase()
     {
-        string path = Path.Combine(Path.GetTempPath(), "agenttrace-" + Guid.NewGuid().ToString("N"));
+        string path = Path.Combine(TestPaths.TempRoot(), "agenttrace-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         Dir = new FilePath(path);
     }

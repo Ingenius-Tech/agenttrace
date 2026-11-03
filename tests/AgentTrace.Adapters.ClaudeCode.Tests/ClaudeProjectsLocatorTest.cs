@@ -50,7 +50,8 @@ public sealed class ClaudeProjectsLocatorTest : TempDirTest
         // match already does. Either way it must be the same folder.
         FilePath found = new ClaudeProjectsLocator(Tmp.Combine("root"), true).ProjectFolder(project)
             ?? throw new Xunit.Sdk.XunitException("folder not found");
-        Assert.Equal(folder, found);
+        // macOS file systems ignore letter case, so the folder is found under the exact name that was built
+        Assert.Equal(folder.Value, found.Value, ignoreCase: true);
     }
 
     [Fact]
