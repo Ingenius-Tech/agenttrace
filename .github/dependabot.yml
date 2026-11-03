@@ -2,11 +2,18 @@ version: 2
 updates:
   - package-ecosystem: nuget
     directory: /
+    # Pull requests go to the integration branch; only the maintainer merges into main.
+    target-branch: development
     schedule:
       interval: weekly
     # Stable versions only: the project uses no preview or EA releases.
     open-pull-requests-limit: 5
+    groups:
+      # Avalonia packages must move together
+      avalonia:
+        patterns: ["Avalonia*"]
   - package-ecosystem: github-actions
     directory: /
+    target-branch: development
     schedule:
       interval: monthly
