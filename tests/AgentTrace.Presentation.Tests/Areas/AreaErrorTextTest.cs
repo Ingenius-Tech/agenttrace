@@ -21,15 +21,15 @@ public sealed class AreaErrorTextTest
     {
         (AreaRuleError Error, string English, string Spanish)[] cases =
         [
-            (new(AreaRuleErrorKind.Unreadable), "The rules file could not be read", "No se pudo leer el archivo de reglas"),
+            (new(AreaRuleErrorKind.Unreadable), "The rules file could not be read", "No se pudo leer el archivo de reglas"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.InvalidJson, Line: 1234), "Invalid JSON at line 1,234", "JSON no válido en la línea 1.234"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.InvalidJson), "Invalid JSON", "JSON no válido"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.UnsupportedVersion, Field: "2"), "Unsupported version 2 (only version 1 is supported)", "Versión 2 no admitida (solo se admite la versión 1)"), // lang-ok: Spanish expectation
-            (new(AreaRuleErrorKind.MissingField, Field: "version"), "Missing required field \"version\"", "Falta el campo obligatorio \"version\""),
+            (new(AreaRuleErrorKind.MissingField, Field: "version"), "Missing required field \"version\"", "Falta el campo obligatorio \"version\""), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.MissingField, AreaIndex: 2, Field: "name"), "area 3: Missing required field \"name\"", "área 3: Falta el campo obligatorio \"name\""), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.UnknownDimension, AreaIndex: 0, AreaId: "x", Field: "tier"), "x: Unknown dimension \"tier\" (use layer, module or kind)", "x: Dimensión desconocida \"tier\" (usa layer, module o kind)"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.InvalidId, AreaIndex: 0), "area 1: Invalid id (lowercase letters, digits, - and _, starting with a letter or a digit)", "área 1: Id no válido (minúsculas, dígitos, - y _, empezando por letra o dígito)"), // lang-ok: Spanish expectation
-            (new(AreaRuleErrorKind.DuplicateId, AreaIndex: 1, AreaId: "a"), "a: Duplicate id (ids are unique across the whole file)", "a: Id duplicado (los ids son únicos en todo el archivo)"),
+            (new(AreaRuleErrorKind.DuplicateId, AreaIndex: 1, AreaId: "a"), "a: Duplicate id (ids are unique across the whole file)", "a: Id duplicado (los ids son únicos en todo el archivo)"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.EmptyInclude, AreaIndex: 1, AreaId: "a"), "a: \"include\" needs at least one pattern", "a: \"include\" necesita al menos un patrón"), // lang-ok: Spanish expectation
             (new(AreaRuleErrorKind.InvalidGlob, AreaIndex: 1, AreaId: "a", Pattern: "{a,b}", GlobError: GlobError.Braces), "a: Invalid pattern \"{a,b}\": braces are not supported", "a: Patrón no válido \"{a,b}\": las llaves no se admiten"), // lang-ok: Spanish expectation
         ];
