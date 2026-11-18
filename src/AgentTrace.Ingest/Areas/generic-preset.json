@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "id": "test", "name": "Tests", "dimension": "kind",
+      "include": ["test", "tests", "Test", "Tests", "__tests__", "spec", "specs", "*.Tests", "*.test.*", "*.spec.*", "*Test.cs", "*Tests.cs", "test_*.py", "*_test.py", "*_test.go"]
+    },
+    {
+      "id": "docs", "name": "Documentation", "dimension": "kind",
+      "include": ["doc", "docs", "Doc", "Docs", "*.md", "*.mdx", "*.rst", "LICENSE", "NOTICE", "CHANGELOG*"]
+    },
+    {
+      "id": "migration", "name": "Migrations", "dimension": "kind",
+      "include": ["migration", "migrations", "Migration", "Migrations", "migrate"]
+    },
+    {
+      "id": "contract", "name": "Contracts", "dimension": "kind",
+      "include": ["contract", "contracts", "Contract", "Contracts", "*.proto", "*.graphql", "*.gql", "*.avsc", "*.xsd", "*.wsdl", "openapi*.json", "openapi*.yaml", "openapi*.yml", "swagger*.json", "swagger*.yaml", "swagger*.yml"]
+    },
+    {
+      "id": "dependencies", "name": "Dependencies", "dimension": "kind",
+      "include": ["package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "Gemfile", "Gemfile.lock", "composer.json", "composer.lock", "pom.xml", "requirements*.txt", "poetry.lock", "pyproject.toml", "*.csproj", "*.fsproj", "Directory.Packages.props", "packages.lock.json"]
+    },
+    {
+      "id": "config", "name": "Configuration", "dimension": "kind",
+      "include": ["*.yml", "*.yaml", "*.toml", "*.ini", "*.env", "*.props", "*.targets", "*.config", "Dockerfile", "docker-compose*", "tsconfig*.json", "global.json", "appsettings*.json"]
+    }
+  ]
+}
