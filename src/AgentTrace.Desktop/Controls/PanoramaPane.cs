@@ -29,6 +29,7 @@ public sealed class PanoramaPane : UserControl
     private readonly ToggleButton _graphToggle;
     private readonly ToggleButton _areasToggle;
     private readonly ToggleButton _knowledgeToggle;
+    private readonly Button _clearFocus = new() { Content = ShellStrings.PanoramaClearFocus, IsVisible = false };
     private GridLength _graphWidth = new(38, GridUnitType.Star);
     private GridLength _rightWidth = new(62, GridUnitType.Star);
     private GridLength _areasHeight = new(40, GridUnitType.Star);
@@ -36,6 +37,9 @@ public sealed class PanoramaPane : UserControl
 
     /// <summary>Raised when the user shows or hides a pane (the window refreshes the pane that appears).</summary>
     public event Action? VisibilityChanged;
+
+    /// <summary>The user asked to remove the highlights that link the panes.</summary>
+    public event Action? ClearFocusRequested;
 
     public PanoramaPane(PaneSlot graph, PaneSlot areas, PaneSlot knowledge)
     {
@@ -45,6 +49,8 @@ public sealed class PanoramaPane : UserControl
         _graphToggle = Toggle(ShellStrings.TabExecutionGraph);
         _areasToggle = Toggle(ShellStrings.TabAreas);
         _knowledgeToggle = Toggle(ShellStrings.TabKnowledge);
+        ToolTip.SetTip(_clearFocus, ShellStrings.PanoramaClearFocusTip);
+        _clearFocus.Click += (_, _) => ClearFocusRequested?.Invoke();
 
         Grid.SetRow(_rowSplitter, 1);
         _right.Children.Add(_rowSplitter);
@@ -58,7 +64,7 @@ public sealed class PanoramaPane : UserControl
             ItemSpacing = 6,
             LineSpacing = 4,
             Margin = new Thickness(8, 4),
-            Children = { _graphToggle, _areasToggle, _knowledgeToggle },
+            Children = { _graphToggle, _areasToggle, _knowledgeToggle, _clearFocus },
         };
         var content = new DockPanel();
         DockPanel.SetDock(bar, Dock.Top);
@@ -76,6 +82,15 @@ public sealed class PanoramaPane : UserControl
     public bool AreasVisible => _areasToggle.IsChecked == true;
 
     public bool KnowledgeVisible => _knowledgeToggle.IsChecked == true;
+
+    /// <summary>The "clear link" button, visible only while the panes highlight a focus.</summary>
+    public Button ClearFocusButton => _clearFocus;
+
+    public bool FocusActive
+    {
+        get => _clearFocus.IsVisible;
+        set => _clearFocus.IsVisible = value;
+    }
 
     public ToggleButton GraphToggle => _graphToggle;
 

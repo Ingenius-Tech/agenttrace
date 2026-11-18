@@ -145,6 +145,14 @@
     <value>Mostrar u ocultar {0}</value>
     <comment>Tooltip of a pane toggle in the Panorama. {0} = the pane name.</comment>
   </data>
+  <data name="PanoramaClearFocus" xml:space="preserve">
+    <value>Quitar vínculo</value>
+    <comment>Button of the Panorama bar, shown while the panes highlight what is related to a selection.</comment>
+  </data>
+  <data name="PanoramaClearFocusTip" xml:space="preserve">
+    <value>Quitar los resaltados que vinculan los tres paneles (las selecciones se quedan donde están)</value>
+    <comment>Tooltip of the "clear link" button of the Panorama.</comment>
+  </data>
   <data name="TerminalButton" xml:space="preserve">
     <value>Terminal</value>
     <comment>Top bar button that opens a system terminal.</comment>

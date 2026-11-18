@@ -8,6 +8,7 @@ using AgentTrace.Core.Areas;
 using AgentTrace.Desktop.Theme;
 using AgentTrace.Presentation.Areas;
 using AgentTrace.Presentation.Heatmap;
+using AgentTrace.Presentation.Panorama;
 using AgentTrace.Presentation.Resources;
 using AgentTrace.Presentation.Text;
 
@@ -36,6 +37,7 @@ public sealed class AreasCanvasView : Control
     private AreaRowKey? _selectedRow;
     private int? _selectedTurn;
     private int? _selectedTask;
+    private FocusTargets? _focus;
     private AreasHit _hovered = AreasHit.None;
     private int _clicks;
 
@@ -100,7 +102,17 @@ public sealed class AreasCanvasView : Control
     /// <summary>The selected task changed.</summary>
     public event Action? TaskSelectionChanged;
 
+    /// <summary>A turn header was clicked by the user (a selection the Panorama links to the other panes).</summary>
+    public event Action<int>? TurnHeaderClicked;
+
     public AreasMatrix Matrix => _matrix;
+
+    /// <summary>The focus the Panorama is showing (columns and rows it highlights), or null.</summary>
+    public FocusTargets? LinkedFocus => _focus;
+
+    public double ScrollX => _scrollX;
+
+    public double ScrollY => _scrollY;
 
     /// <summary>What the canvas says in place of the map while there is nothing to draw; null when it draws the map.</summary>
     public string? EmptyMessage => !_matrix.IsEmpty ? null
@@ -177,6 +189,46 @@ public sealed class AreasCanvasView : Control
         _selectedTurn = _matrix.ColumnOfTurn(turn) >= 0 ? turn : null;
         InvalidateVisual();
     }
+
+    /// <summary>
+    /// Highlights the turn columns and the area rows of a focus and scrolls the first of each into view. It is not a selection: it raises no
+    /// event and does not open the cell panel. Null or empty targets clear it.
+    /// </summary>
+    public void ShowFocus(FocusTargets? targets, bool reveal = true)
+    {
+        _focus = targets is { IsEmpty: false } ? targets : null;
+        if (_focus is { } focus && reveal)
+        {
+            if (focus.FirstTurn is { } turn) RevealColumn(turn);
+            int line = _lines.ToList().FindIndex(l => l.File is null && !l.IsMore && focus.AreaRows.Contains(_matrix.Rows[l.Row].Key));
+            if (line >= 0) RevealLine(line);
+        }
+        InvalidateVisual();
+    }
+
+    /// <summary>Scrolls horizontally so the column of a turn is visible (centered when it was not). Nothing if the turn has no column.</summary>
+    public void RevealColumn(int turn)
+    {
+        int column = _matrix.ColumnOfTurn(turn);
+        if (column < 0) return;
+        double width = AreasGeometry.ColumnWidth * _zoom;
+        if (column * width < _scrollX || (column + 1) * width > _scrollX + ViewportWidth) _scrollX = column * width + width / 2 - ViewportWidth / 2;
+        ClampScroll();
+        InvalidateVisual();
+    }
+
+    private void RevealLine(int line)
+    {
+        double top = line * AreasGeometry.RowHeight;
+        if (top < _scrollY || top + AreasGeometry.RowHeight > _scrollY + ViewportHeight) _scrollY = top + AreasGeometry.RowHeight / 2 - ViewportHeight / 2;
+        ClampScroll();
+    }
+
+    private static IBrush FocusBrush(double alpha) => new SolidColorBrush(AppColors.Select, alpha);
+
+    private bool ColumnFocused(int column) => _focus is { } focus && focus.HasTurn(_matrix.Columns[column].Turn);
+
+    private bool LineFocused(AreaDisplayRow line) => _focus is { } focus && !line.IsMore && focus.AreaRows.Contains(_matrix.Rows[line.Row].Key);
 
     public void ToggleExpanded(AreaRowKey key)
     {
@@ -264,6 +316,7 @@ public sealed class AreasCanvasView : Control
                 break;
             case AreasHitKind.TurnHeader:
                 SelectTurn(_matrix.Columns[hit.Column].Turn);
+                TurnHeaderClicked?.Invoke(_matrix.Columns[hit.Column].Turn);
                 break;
             default:
                 Select(null);
@@ -355,11 +408,19 @@ public sealed class AreasCanvasView : Control
         (int l0, int l1) = VisibleLines();
         double cw = AreasGeometry.ColumnWidth * _zoom;
         using DrawingContext.PushedState clip = ctx.PushClip(new Rect(AreasGeometry.HeaderWidth, AreasGeometry.TopHeight, Math.Max(0, w - AreasGeometry.HeaderWidth), Math.Max(0, h - AreasGeometry.TopHeight - LegendHeight)));
+        if (_focus is not null)
+        {
+            for (int c = c0; c <= c1; c++)
+            {
+                if (ColumnFocused(c)) ctx.FillRectangle(FocusBrush(0.16), new Rect(AreasGeometry.ColumnX(c, _scrollX, _zoom), AreasGeometry.TopHeight, cw, h));
+            }
+        }
         for (int l = l0; l <= l1; l++)
         {
             AreaDisplayRow line = _lines[l];
             double y = AreasGeometry.RowY(l, _scrollY);
             if (l % 2 == 1) ctx.FillRectangle(AppColors.Brush(AppColors.Panel), new Rect(AreasGeometry.HeaderWidth, y, w, AreasGeometry.RowHeight));
+            if (LineFocused(line)) ctx.FillRectangle(FocusBrush(0.12), new Rect(AreasGeometry.HeaderWidth, y, w, AreasGeometry.RowHeight));
             if (line.IsMore) continue;
             for (int c = c0; c <= c1; c++)
             {
@@ -440,6 +501,7 @@ public sealed class AreasCanvasView : Control
             using DrawingContext.PushedState opacity = Dimmed(c) ? ctx.PushOpacity(0.4) : default;
             bool selected = _matrix.Columns[c].Turn == _selectedTurn;
             if (selected) ctx.FillRectangle(AppColors.Brush(AppColors.Border), new Rect(x, AreasGeometry.TaskBandHeight, cw, AreasGeometry.TurnBandHeight));
+            if (ColumnFocused(c)) ctx.FillRectangle(FocusBrush(0.45), new Rect(x, AreasGeometry.TaskBandHeight, cw, AreasGeometry.TurnBandHeight));
             DrawText(ctx, (_matrix.Columns[c].Turn + 1).ToString(CultureInfo.CurrentCulture), x + 4, AreasGeometry.TaskBandHeight + 2, 10, selected ? AppColors.Text : AppColors.Muted, (int)Math.Max(0, cw - 6));
         }
     }
@@ -488,6 +550,7 @@ public sealed class AreasCanvasView : Control
             bool isFile = line.File is not null;
             bool selected = !isFile && !line.IsMore && _selectedRow == _matrix.Rows[line.Row].Key;
             if (selected) ctx.FillRectangle(AppColors.Brush(AppColors.Card), new Rect(0, y, AreasGeometry.HeaderWidth, AreasGeometry.RowHeight));
+            if (LineFocused(line)) ctx.FillRectangle(FocusBrush(0.3), new Rect(0, y, AreasGeometry.HeaderWidth, AreasGeometry.RowHeight));
             if (_hovered.Kind == AreasHitKind.RowHeader && _hovered.Row == l) ctx.DrawRectangle(null, new Pen(AppColors.Brush(AppColors.Select), 1), new Rect(0.5, y + 0.5, AreasGeometry.HeaderWidth - 1, AreasGeometry.RowHeight - 1));
             double indent = isFile || line.IsMore ? 22 : 8;
             if (!isFile && !line.IsMore)

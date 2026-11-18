@@ -109,6 +109,7 @@ public sealed partial class MainWindow : Window
         _knowledgeSlot = new PaneSlot(_knowledge);
         _panorama = new PanoramaPane(_graphSlot, _areasSlot, _knowledgeSlot);
         WireDiffPane();
+        WirePanorama();
         Content = BuildUi();
         _statusBar.Message = ShellStrings.StatusReady;
         _statusBar.SetStats(StatusSegments.Of(_stats));
@@ -121,6 +122,7 @@ public sealed partial class MainWindow : Window
             if (!ReferenceEquals(e.Source, _tabs)) return;
             if (_tabs.SelectedIndex == PanoramaTab) _panorama.Attach();
             else _panorama.Detach();
+            SetPanoramaShown(_panorama.IsAttached);
             if (KnowledgeShown) RefreshKnowledge();
             if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
             if (AreasShown) RefreshAreas();

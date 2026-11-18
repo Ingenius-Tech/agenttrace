@@ -496,6 +496,7 @@ public sealed partial class MainWindow
         _knowledgeDirty = false;
         _knowledge.SetGraph(_knowledgeBuilder.Snapshot());
         ApplyPendingKnowledgeSelect();
+        ReapplyLinkedFocus();
     }
 
     // ---- heatmap ----
@@ -640,6 +641,7 @@ public sealed partial class MainWindow
                 _heatmapListing = listing;
                 _areasRepos = repos;
                 _areas.SetSnapshot(snapshot);
+                ReapplyLinkedFocus();
                 if (_areasDirty) ScheduleAreasRefresh();
             });
         });
@@ -689,6 +691,7 @@ public sealed partial class MainWindow
             _graphRefreshPending = false;
             _graph.SetGraph(_flow.Snapshot());
             ApplyPendingGraphSelect();
+            ReapplyLinkedFocus();
         }, TimeSpan.FromMilliseconds(250));
     }
 
