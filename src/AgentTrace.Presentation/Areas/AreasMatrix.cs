@@ -153,6 +153,31 @@ public sealed class AreasMatrix
         return -1;
     }
 
+    /// <summary>The rows (of the current dimension, Unclassified included) that hold any of the files; files outside every visible row are ignored.</summary>
+    public IReadOnlySet<AreaRowKey> RowsOf(IEnumerable<FilePath> files)
+    {
+        HashSet<AreaRowKey> visible = [.. Rows.Select(r => r.Key)];
+        HashSet<AreaRowKey> found = [];
+        foreach (FilePath file in files)
+        {
+            AreaRowKey key = KeyOf(_snapshot, file, Dimension).Key;
+            if (visible.Contains(key)) found.Add(key);
+        }
+        return found;
+    }
+
+    /// <summary>The files of the cell of a row in a turn (empty if the turn has no column or the cell no activity).</summary>
+    public IReadOnlyList<FilePath> FilesOf(AreaRowKey row, int turn)
+    {
+        int r = -1;
+        for (int i = 0; i < Rows.Count; i++)
+        {
+            if (Rows[i].Key == row) r = i;
+        }
+        int column = ColumnOfTurn(turn);
+        return r < 0 || column < 0 || Cell(r, column) is not { } cell ? [] : [.. cell.Files.Select(f => f.Path)];
+    }
+
     /// <summary>The band of a task, or null if it has no visible column.</summary>
     public AreaBand? BandOfTask(int taskIndex) => Bands.FirstOrDefault(b => b.Task.Index == taskIndex);
 
@@ -252,8 +277,7 @@ public sealed class AreasMatrix
             {
                 var activity = new FileActivity(file.Reads, 0, file.Writes, 0, file.External, file.Errors);
                 if (activity.Value(filter) == 0) continue;
-                (AreaRepo? repo, AreaAssignment assignment) = snapshot.Repos.Classify(file.Path);
-                var key = new AreaRowKey(repo?.Root ?? snapshot.Project, repo is null ? null : assignment.Of(dimension));
+                (AreaRepo? repo, AreaRowKey key) = KeyOf(snapshot, file.Path, dimension);
                 if (!rows.TryGetValue(key, out RowAcc? row)) rows[key] = row = new RowAcc(key, NameOf(repo, key), OrderOf(repo, key, dimension));
                 row.Total = row.Total.Plus(activity);
                 row.Files.Add(file.Path);
@@ -299,6 +323,13 @@ public sealed class AreasMatrix
         }
         return new AreasMatrix(snapshot, dimension, filter,
             [.. ordered.Select(r => new AreaRow(r.Key, r.Name, r.Total, r.Files.Count))], columns, bands, grid);
+    }
+
+    /// <summary>The row a file belongs to in a dimension (the repository it classifies in, or the project's own row when none does).</summary>
+    private static (AreaRepo? Repo, AreaRowKey Key) KeyOf(AreasSnapshot snapshot, FilePath path, AreaDimension dimension)
+    {
+        (AreaRepo? repo, AreaAssignment assignment) = snapshot.Repos.Classify(path);
+        return (repo, new AreaRowKey(repo?.Root ?? snapshot.Project, repo is null ? null : assignment.Of(dimension)));
     }
 
     private static string NameOf(AreaRepo? repo, AreaRowKey key) =>
