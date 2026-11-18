@@ -424,9 +424,12 @@ public sealed class AreasCanvasView : Control
             var rect = new Rect(x + 1, 2, width - 2, AreasGeometry.TaskBandHeight - 4);
             ctx.DrawRectangle(AppColors.Brush(selected ? AppColors.Border : AppColors.Card), selected ? new Pen(AppColors.Brush(AppColors.Select), 2) : null, rect, 4, 4);
             AreaTaskSummary summary = _matrix.Snapshot.Summaries[band.Task.Index];
-            double badgesWidth = PaintBadges(ctx, summary, x + width - 6, 5);
-            DrawText(ctx, AreaText.TaskTitle(band.Task), x + 6, 4, 11, AppColors.Text, (int)Math.Max(0, width - 12 - badgesWidth), bold: true);
-            DrawText(ctx, AreaText.TaskCounts(summary), x + 6, 20, 10, AppColors.Muted, (int)Math.Max(0, width - 12));
+            // The title comes first: in a band too narrow to share its line with the badges they move to the counts line.
+            double badgesWidth = AreaBadgesWidth(summary);
+            bool badgesBelow = badgesWidth > 0 && width - 12 - badgesWidth < MinTitleWidth;
+            PaintBadges(ctx, summary, x + width - 6, badgesBelow ? 21 : 5);
+            DrawText(ctx, AreaText.TaskTitle(band.Task), x + 6, 4, 11, AppColors.Text, (int)Math.Max(0, width - 12 - (badgesBelow ? 0 : badgesWidth)), bold: true);
+            DrawText(ctx, AreaText.TaskCounts(summary), x + 6, 20, 10, AppColors.Muted, (int)Math.Max(0, width - 12 - (badgesBelow ? badgesWidth : 0)));
         }
         for (int c = c0; c <= c1; c++)
         {
@@ -441,6 +444,14 @@ public sealed class AreasCanvasView : Control
     /// <summary>Draws the badges of a task right-aligned ending at <paramref name="right"/>; returns the width they take.</summary>
     private double PaintBadges(DrawingContext ctx, AreaTaskSummary summary, double right, double y)
     {
+    /// <summary>Narrowest title, in pixels, that still shows "Task 51" in full.</summary>
+    private const double MinTitleWidth = 56;
+
+    private const double BadgeWidth = 15;
+
+    private static double AreaBadgesWidth(AreaTaskSummary summary) =>
+        new[] { AreaBadges.UntestedChange, AreaBadges.CrossModule, AreaBadges.SharedTouched }.Count(badge => summary.Badges.HasFlag(badge)) * BadgeWidth;
+
         (AreaBadges Badge, Codicon Icon, Color Color)[] all =
         [
             (AreaBadges.UntestedChange, Codicon.Question, AppColors.Modified),
@@ -451,7 +462,7 @@ public sealed class AreasCanvasView : Control
         foreach ((AreaBadges badge, Codicon icon, Color color) in all)
         {
             if (!summary.Badges.HasFlag(badge)) continue;
-            taken += 15;
+            taken += BadgeWidth;
             if (!_glyphs.TryGetValue((icon, color), out FormattedText? glyph))
             {
                 glyph = new FormattedText(Codicons.Glyph(icon), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface(Codicons.Font), 12, AppColors.Brush(color));
