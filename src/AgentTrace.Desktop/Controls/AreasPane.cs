@@ -75,10 +75,10 @@ public sealed class AreasPane : UserControl
             Rebuild();
         };
 
-        var bar = new StackPanel
+        var bar = new WrapPanel
         {
-            Orientation = Orientation.Horizontal,
-            Spacing = 6,
+            ItemSpacing = 6,
+            LineSpacing = 4,
             Margin = new Thickness(8, 4),
             Children = { _reads, _writes, _errors, new TextBlock { Text = AreaStrings.GroupLabel, Foreground = AppColors.Brush(AppColors.Muted), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) }, _group },
         };
@@ -100,11 +100,12 @@ public sealed class AreasPane : UserControl
         var content = new DockPanel();
         DockPanel.SetDock(top, Dock.Top);
         content.Children.Add(top);
-        DockPanel.SetDock(_panel, Dock.Right);
+        DetailDock.Apply(_panel, _panel, double.PositiveInfinity, FileDetailPanel.PanelWidth);
         content.Children.Add(_panel);
         content.Children.Add(_canvas);
         Content = content;
 
+        SizeChanged += (_, e) => DetailDock.Apply(_panel, _panel, e.NewSize.Width, FileDetailPanel.PanelWidth);
         _canvas.CellSelectionChanged += RefreshPanel;
     }
 
