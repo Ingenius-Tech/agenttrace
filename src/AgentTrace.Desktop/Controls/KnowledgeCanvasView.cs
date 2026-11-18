@@ -399,8 +399,36 @@ public sealed partial class KnowledgeCanvasView : Control
             DrawText(ctx, labels[i], x + 15, y - 11, 11, AppColors.Muted);
             x += 25 + labels[i].Length * 6.2;
         }
-        DrawText(ctx, MapStrings.KnowledgeLegendNote, x + 10, y - 11, 11, AppColors.Muted);
+        FormattedText note = LegendNote(w, out Rect rect);
+        ctx.DrawText(note, rect.TopLeft);
     }
+
+    /// <summary>
+    /// The note of the legend: after the color keys when it fits, otherwise on a line of its own above them (shortened with an
+    /// ellipsis only if it is wider than the whole canvas), so a narrow pane never clips it silently.
+    /// </summary>
+    private FormattedText LegendNote(double w, out Rect rect)
+    {
+        double x = 14;
+        foreach (string label in new[] { MapStrings.LegendCreated, MapStrings.LegendModified, MapStrings.LegendDeleted, MapStrings.LegendRead }) x += 25 + label.Length * 6.2;
+        FormattedText note = Text(MapStrings.KnowledgeLegendNote, 11, AppColors.Muted, Sans);
+        note.MaxTextWidth = double.PositiveInfinity;
+        note.MaxLineCount = 1;
+        note.Trimming = TextTrimming.CharacterEllipsis;
+        double top = Bounds.Height - 14 - 11;
+        bool fits = x + 10 + note.Width <= w - 8;
+        double left = fits ? x + 10 : 14;
+        if (!fits)
+        {
+            top -= 16;
+            note.MaxTextWidth = Math.Max(1, w - 14 - 8);
+        }
+        rect = new Rect(left, top, Math.Min(note.Width, Math.Max(1, w - left - 8)), note.Height);
+        return note;
+    }
+
+    /// <summary>Where the legend note is drawn in a canvas of the given width (for tests).</summary>
+    public Rect LegendNoteBounds(double width) { LegendNote(width, out Rect rect); return rect; }
 
     private FormattedText Text(string text, double size, Color color, Typeface typeface)
     {
