@@ -62,7 +62,7 @@ public sealed class AreaActivityBuilderTest
         ]);
         AreaActivity a = Build(flow);
         Assert.Equal([0, 1], a.Turns.Select(t => t.Turn).ToArray());
-        Assert.Equal(new AreaFileActivity(F("src/a.cs"), 1, 1, 0, 0, 0), Of(a, 0, "src/a.cs"));
+        Assert.Equal(new AreaFileActivity(F("src/a.cs"), 1, 1, 0, 0, 0, 1), Of(a, 0, "src/a.cs"));
         Assert.Equal(1, Of(a, 0, "src/b.cs").Reads);
         Assert.Equal(0, Of(a, 0, "src/b.cs").Writes);
         Assert.Equal(1, Of(a, 1, "src/a.cs").Writes);
@@ -82,7 +82,7 @@ public sealed class AreaActivityBuilderTest
         FlowGraph flow = Flow(TwoTurns);
         ToolCall w2 = Call(11, "w2");
         AreaActivity a = Build(flow, Git("src/sh.cs", ChangeKind.Created, At(12), By(Confidence.Exact, w2)));
-        Assert.Equal(new AreaFileActivity(F("src/sh.cs"), 0, 1, 0, 0, 0), Of(a, 1, "src/sh.cs"));
+        Assert.Equal(new AreaFileActivity(F("src/sh.cs"), 0, 1, 0, 0, 0, 0), Of(a, 1, "src/sh.cs"));
     }
 
     [Theory]
@@ -110,7 +110,7 @@ public sealed class AreaActivityBuilderTest
     {
         FlowGraph flow = Flow(TwoTurns);
         AreaActivity a = Build(flow, Git("x.cs", ChangeKind.Modified, At(12), By(Confidence.Exact, Call(12, "ghost"))));
-        Assert.Equal(new AreaFileActivity(F("x.cs"), 0, 0, 1, 0, int.MaxValue), Of(a, 1, "x.cs"));
+        Assert.Equal(new AreaFileActivity(F("x.cs"), 0, 0, 1, 0, int.MaxValue, int.MaxValue), Of(a, 1, "x.cs"));
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public sealed class AreaActivityBuilderTest
     {
         FlowGraph flow = Flow(TwoTurns);
         AreaActivity a = Build(flow, Git("x.cs", ChangeKind.Modified, At(2), Attribution.None()));
-        Assert.Equal(new AreaFileActivity(F("x.cs"), 0, 0, 1, 0, int.MaxValue), Of(a, 0, "x.cs"));
+        Assert.Equal(new AreaFileActivity(F("x.cs"), 0, 0, 1, 0, int.MaxValue, int.MaxValue), Of(a, 0, "x.cs"));
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public sealed class AreaActivityBuilderTest
     public void ExternalChangesOfTheTraceCountAsExternal()
     {
         FlowGraph flow = Flow([new UserMessage(H(0), "p"), new FileChanged(H(1), F("e.txt"), ChangeKind.Modified, null)]);
-        Assert.Equal(new AreaFileActivity(F("e.txt"), 0, 0, 1, 0, int.MaxValue), Of(Build(flow), 0, "e.txt"));
+        Assert.Equal(new AreaFileActivity(F("e.txt"), 0, 0, 1, 0, int.MaxValue, int.MaxValue), Of(Build(flow), 0, "e.txt"));
     }
 
     [Fact]

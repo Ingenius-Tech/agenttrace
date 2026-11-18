@@ -12,6 +12,7 @@ using AgentTrace.Core;
 using AgentTrace.Desktop.Composition;
 using AgentTrace.Desktop.Controls;
 using AgentTrace.Desktop.Theme;
+using AgentTrace.Core.Areas;
 using AgentTrace.Presentation.Graph;
 using AgentTrace.Presentation.Localization;
 using AgentTrace.Presentation.Resources;
@@ -40,6 +41,7 @@ public sealed partial class MainWindow : Window
     public const int FileTab = 3;
     public const int KnowledgeTab = 4;
     public const int HeatmapTab = 5;
+    public const int AreasTab = 6;
 
     private readonly IReadOnlyList<IAgentAdapter> _adapters;
     private readonly RecentProjects _recent;
@@ -56,6 +58,7 @@ public sealed partial class MainWindow : Window
     private readonly GraphPane _graph;
     private readonly KnowledgePane _knowledge;
     private readonly HeatmapPane _heatmap;
+    private readonly AreasPane _areas;
     private readonly Button _terminalButton = new()
     {
         Content = new StackPanel
@@ -95,6 +98,7 @@ public sealed partial class MainWindow : Window
         _graph = new GraphPane(path => OpenFile(path), ShowInInspector);
         _knowledge = new KnowledgePane(path => OpenFile(path), ShowInInspector);
         _heatmap = new HeatmapPane(path => OpenFile(path), ShowInInspector, path => _tree.Reveal(path), ShowInKnowledge);
+        _areas = new AreasPane(path => OpenFile(path), ShowInInspector);
         WireDiffPane();
         Content = BuildUi();
         _statusBar.Message = ShellStrings.StatusReady;
@@ -107,6 +111,7 @@ public sealed partial class MainWindow : Window
             if (!ReferenceEquals(e.Source, _tabs)) return;
             if (_tabs.SelectedIndex == KnowledgeTab) RefreshKnowledge();
             else if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
+            else if (_tabs.SelectedIndex == AreasTab) RefreshAreas();
         };
 
         // Avalonia may overwrite the DWM attributes when creating the window: they are applied after Opened.
@@ -137,6 +142,8 @@ public sealed partial class MainWindow : Window
     public KnowledgePane Knowledge => _knowledge;
 
     public HeatmapPane Heatmap => _heatmap;
+
+    public AreasPane Areas => _areas;
 
     public FilePath? CurrentProject { get; private set; }
 
@@ -180,6 +187,7 @@ public sealed partial class MainWindow : Window
         AddTab(ShellStrings.TabFile, "Ctrl+4", _file);
         AddTab(ShellStrings.TabKnowledge, "Ctrl+5", _knowledge);
         AddTab(ShellStrings.TabHeatmap, "Ctrl+6", _heatmap);
+        AddTab(ShellStrings.TabAreas, "Ctrl+7", _areas);
 
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("300,Auto,*") };
         split.Children.Add(left);
@@ -317,6 +325,7 @@ public sealed partial class MainWindow : Window
             Key.D4 => FileTab,
             Key.D5 => KnowledgeTab,
             Key.D6 => HeatmapTab,
+            Key.D7 => AreasTab,
             _ => null,
         };
         if (tab is { } index)
@@ -376,9 +385,13 @@ public sealed partial class MainWindow : Window
         if (options.HeatmapFilter is { } heatFilter) _heatmap.SetFilter(ActivityFilter.Parse(heatFilter));
         if (options.HeatmapArea is { } heatArea) _heatmap.SetArea("activity".Equals(heatArea, StringComparison.OrdinalIgnoreCase) ? HeatArea.Activity : HeatArea.Size);
         if (options.HeatmapZoom is not null || options.HeatmapSelect is not null) SetHeatmapPending(options.HeatmapZoom, options.HeatmapSelect);
+        // To check the areas map without using the mouse: --areas-group, --areas-filter, --areas-select, --areas-expand
+        if (options.AreasGroup is { } areasGroup) _areas.SetDimension(Enum.Parse<AreaDimension>(areasGroup, ignoreCase: true));
+        if (options.AreasFilter is { } areasFilter) _areas.SetFilter(ActivityFilter.Parse(areasFilter));
+        if (options.AreasSelect is not null || options.AreasExpand is not null) _areas.SetPending(options.AreasSelect, options.AreasExpand);
         if (options.Tab is { } tab)
         {
-            SwitchTab(tab switch { "graph" => GraphTab, "diff" => DiffTab, "telemetry" => TelemetryTab, "file" => FileTab, "knowledge" => KnowledgeTab, "heatmap" => HeatmapTab, _ => GraphTab });
+            SwitchTab(tab switch { "graph" => GraphTab, "diff" => DiffTab, "telemetry" => TelemetryTab, "file" => FileTab, "knowledge" => KnowledgeTab, "heatmap" => HeatmapTab, "areas" => AreasTab, _ => GraphTab });
         }
     }
 

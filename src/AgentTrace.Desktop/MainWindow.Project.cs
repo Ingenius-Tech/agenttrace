@@ -8,6 +8,7 @@ using AgentTrace.Desktop.Composition;
 using AgentTrace.Desktop.Controls;
 using AgentTrace.Git;
 using AgentTrace.Ingest;
+using AgentTrace.Presentation.Areas;
 using AgentTrace.Presentation.Graph;
 using AgentTrace.Presentation.Heatmap;
 using AgentTrace.Presentation.Observation;
@@ -161,8 +162,10 @@ public sealed partial class MainWindow
                     _lastIndex = index;
                     _lastRules = rules;
                     _heatmapDiskDirty = true;
+                    _areasDiskDirty = true;
                     _tree.Update(rules, index);
                     ScheduleHeatmapRefresh();
+                    ScheduleAreasRefresh();
                     RefreshOpenFileStatus();
                     ReloadOpenFile(false);
                 });
@@ -391,6 +394,11 @@ public sealed partial class MainWindow
         _heatmapListing = null;
         _pendingHeatmapZoom = null;
         _pendingHeatmapSelect = null;
+        _areas.Clear();
+        _areasRepos = null;
+        _areasBusy = false;
+        _areasDirty = true;
+        _areasDiskDirty = true;
     }
 
     private void OnEventsForAnalysis(IReadOnlyList<AgentEvent> events)
@@ -405,6 +413,7 @@ public sealed partial class MainWindow
         ScheduleGraphRefresh();
         ScheduleKnowledgeRefresh();
         ScheduleHeatmapRefresh();
+        ScheduleAreasRefresh();
     }
 
     /// <summary>With the search window open, a new result appears without repeating the search (at most every 500 ms).</summary>
@@ -570,6 +579,65 @@ public sealed partial class MainWindow
         }
     }
 
+    // ---- areas map ----
+
+    private bool _areasRefreshPending;
+    private bool _areasBusy;
+    private bool _areasDirty = true;
+
+    /// <summary>The disk must be listed again and the rules files read again (the observer reported changes).</summary>
+    private bool _areasDiskDirty = true;
+
+    private AreaRepoSet? _areasRepos;
+
+    /// <summary>Repaints the areas map at most once a second, and only if its tab is in view.</summary>
+    private void ScheduleAreasRefresh()
+    {
+        _areasDirty = true;
+        if (_areasRefreshPending || _tabs.SelectedIndex != AreasTab) return;
+        _areasRefreshPending = true;
+        DispatcherTimer.RunOnce(() =>
+        {
+            _areasRefreshPending = false;
+            RefreshAreas();
+        }, TimeSpan.FromMilliseconds(1000));
+    }
+
+    /// <summary>
+    /// Rebuilds the areas map: the flow is taken here, on the UI thread; the listing, the rules files and the activity per file are computed on a
+    /// separate thread (the listing is the heatmap's: one cache). Only one pass at a time.
+    /// </summary>
+    private void RefreshAreas()
+    {
+        if (!_areasDirty || _observer is not { } current || CurrentProject is not { } project) return;
+        if (_areasBusy) return;
+        _areasBusy = true;
+        _areasDirty = false;
+        bool rescan = _areasDiskDirty || _heatmapListing is null || _areasRepos is null;
+        _areasDiskDirty = false;
+        long mine = _generation;
+        FlowGraph flow = _flow.Snapshot();
+        IReadOnlyList<ChangeEntry> changes = _lastChanges;
+        FileStatusIndex index = _lastIndex;
+        IgnoreRules? rules = _lastRules;
+        ProjectListing? known = _heatmapListing;
+        AreaRepoSet? knownRepos = _areasRepos;
+        Task.Run(() =>
+        {
+            ProjectListing listing = rescan ? ProjectScanner.Scan(project, rules ?? current.IgnoreRules(), index, ProjectScanner.DefaultMaxFiles) : known!;
+            AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing) : knownRepos!;
+            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project);
+            OnUi(mine, () =>
+            {
+                _areasBusy = false;
+                _heatmapListing = listing;
+                _areasRepos = repos;
+                _areas.SetSnapshot(snapshot);
+                if (_areasDirty) ScheduleAreasRefresh();
+            });
+        });
+    }
+
     /// <summary>Shows "Knowledge" with that file selected.</summary>
     private void ShowInKnowledge(FilePath path)
     {
@@ -601,6 +669,7 @@ public sealed partial class MainWindow
         _knowledgeBuilder.SetChanges(changes);
         ScheduleKnowledgeRefresh();
         ScheduleHeatmapRefresh();
+        ScheduleAreasRefresh();
     }
 
     /// <summary>Repaints the graph at most every 250 ms: bursts of events are grouped.</summary>

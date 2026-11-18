@@ -10,15 +10,15 @@ using static AgentTrace.Desktop.Tests.MainWindowTests;
 
 namespace AgentTrace.Desktop.Tests;
 
-/// <summary>The six tabs of an observed project, captured in English and in Spanish (<c>captures/&lt;tab&gt;-&lt;lang&gt;.png</c>), with their headers coming from the resources.</summary>
+/// <summary>The seven tabs of an observed project, captured in English and in Spanish (<c>captures/&lt;tab&gt;-&lt;lang&gt;.png</c>), with their headers coming from the resources.</summary>
 public sealed class LocalizedTabsTests : TempDirTestBase
 {
     private const string Session = "aaaaaaaa-0000-0000-0000-000000000001";
 
-    private static readonly string[] TabNames = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap"];
+    private static readonly string[] TabNames = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap", "areas"];
 
     private static string[] ExpectedHeaders() =>
-        [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap];
+        [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap, ShellStrings.TabAreas];
 
     [Theory]
     [InlineData("en-US", "en")]

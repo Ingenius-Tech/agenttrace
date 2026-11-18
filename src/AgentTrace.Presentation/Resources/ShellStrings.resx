@@ -133,6 +133,10 @@
     <value>Heatmap</value>
     <comment>Tab header.</comment>
   </data>
+  <data name="TabAreas" xml:space="preserve">
+    <value>Areas map</value>
+    <comment>Tab header.</comment>
+  </data>
   <data name="TerminalButton" xml:space="preserve">
     <value>Terminal</value>
     <comment>Top bar button that opens a system terminal.</comment>
@@ -284,6 +288,10 @@ If there is no commit, the whole project would appear as new: you can also creat
   </data>
   <data name="StartupWarningUnknownHeatmapAreaFormat" xml:space="preserve">
     <value>Unknown --heatmap-area: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningUnknownAreasGroupFormat" xml:space="preserve">
+    <value>Unknown --areas-group: {0}</value>
     <comment>Startup warning. {0} = the value given.</comment>
   </data>
   <data name="StartupWarningUnknownRenderFormat" xml:space="preserve">

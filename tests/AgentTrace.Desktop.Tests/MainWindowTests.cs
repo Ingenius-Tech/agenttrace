@@ -18,7 +18,7 @@ namespace AgentTrace.Desktop.Tests;
 
 /// <summary>
 /// The whole window, end to end and without a screen: a project with real git, an agent whose trace is the synthetic Claude Code
-/// one and the six tabs populated.
+/// one and the seven tabs populated.
 /// </summary>
 public sealed class MainWindowTests : TempDirTestBase
 {
@@ -87,7 +87,7 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task AnObservedProjectFillsTheSixTabsAndTheKeyboardSwitchesThem()
+    public Task AnObservedProjectFillsTheSevenTabsAndTheKeyboardSwitchesThem()
     {
         Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
         GitFixture repo = GitFixture.Init(Dir.Combine("project"));
@@ -120,8 +120,8 @@ public sealed class MainWindowTests : TempDirTestBase
             Assert.Equal(MainWindow.FileTab, window.Tabs.SelectedIndex);
             Pump("its content", () => window.FileView.Viewer.Text.Contains("# Project", StringComparison.Ordinal));
 
-            // Ctrl+1..6 switch tabs (the sixth is the heatmap)
-            for (int i = 1; i <= 6; i++)
+            // Ctrl+1..7 switch tabs (the sixth is the heatmap, the seventh the areas map)
+            for (int i = 1; i <= 7; i++)
             {
                 Key key = Key.D1 + (i - 1);
                 window.KeyPress(key, RawInputModifiers.Control, PhysicalKey.Digit1 + (i - 1), i.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -163,6 +163,17 @@ public sealed class MainWindowTests : TempDirTestBase
                 return window.Knowledge.Canvas.Graph.FindNode(repo.Dir.Combine("new.txt")) is { OnlyExternal: true };
             }, 20_000);
             Assert.Single(window.Knowledge.Canvas.Graph.Nodes);
+
+            // The areas map places the same git change in the suggested module of the repository (as with the heatmap, it is brought up to date by coming back to the tab)
+            Pump("the areas map", () =>
+            {
+                WriteNewFile();
+                window.SwitchTab(MainWindow.GraphTab);
+                window.SwitchTab(MainWindow.AreasTab);
+                return window.Areas.Canvas.Matrix.Rows.Any(r => r.Files > 0);
+            }, 20_000);
+            Assert.Equal([repo.Dir.FileName], window.Areas.Canvas.Matrix.Rows.Select(r => r.Name).ToArray());
+            Save(window, "main-areas-live");
 
             // A real change on disk appears in the Inspector and its diff has the expected rows
             File.WriteAllText(repo.Dir.Combine("README.md").Value, "# Project\nnew line ñ\n"); // lang-ok: non-ASCII content
@@ -310,12 +321,12 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task TheWindowOpensWithTheDarkThemeTheTitleAndSixTabs() => HeadlessHost.Run(() =>
+    public Task TheWindowOpensWithTheDarkThemeTheTitleAndSevenTabs() => HeadlessHost.Run(() =>
     {
         var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")));
         window.Show();
         Assert.Equal(MainWindow.AppTitle, window.Title);
-        Assert.Equal(6, window.Tabs.ItemCount);
+        Assert.Equal(7, window.Tabs.ItemCount);
         Assert.Equal(MainWindow.GraphTab, window.Tabs.SelectedIndex);
         window.Close();
     });
@@ -327,9 +338,9 @@ public sealed class MainWindowTests : TempDirTestBase
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
         Assert.Equal(
-            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap],
+            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap, ShellStrings.TabAreas],
             headers);
-        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap"], headers);
+        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap", "Areas map"], headers);
         Assert.Equal("Ready: open a project to start", window.StatusBar.Message);
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "No project open");
         window.Close();
@@ -342,7 +353,7 @@ public sealed class MainWindowTests : TempDirTestBase
         var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
-        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor"], headers); // lang-ok
+        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor", "Mapa de áreas"], headers); // lang-ok
         Assert.Equal("Listo: abre un proyecto para empezar", window.StatusBar.Message); // lang-ok
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "Ningún proyecto abierto"); // lang-ok
         window.Close();

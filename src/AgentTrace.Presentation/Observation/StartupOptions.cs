@@ -11,7 +11,8 @@ namespace AgentTrace.Presentation.Observation;
 /// <c>--kg-view</c> (<c>2d</c>, <c>3d</c>, <c>top</c>, <c>side</c>), <c>--kg-yaw</c>, <c>--kg-pitch</c> (degrees), <c>--search</c> (opens the search window with that text),
 /// <c>--graph-select</c>, <c>--graph-collapse</c>, <c>--graph-orientation</c>, <c>--graph-filter</c>, <c>--graph-zoom</c>,
 /// <c>--heatmap-zoom</c> (folder to zoom into), <c>--heatmap-filter</c> (<c>reads,writes,errors</c>), <c>--heatmap-area</c> (<c>size</c> or <c>activity</c>),
-/// <c>--heatmap-select</c> (file or folder to select), <c>--lang</c> (<c>en</c> or <c>es</c>: language of this run) and, to
+/// <c>--heatmap-select</c> (file or folder to select), <c>--areas-group</c> (<c>layer</c>, <c>module</c> or <c>kind</c>),
+/// <c>--areas-filter</c> (<c>reads,writes,errors</c>), <c>--areas-select</c> (<c>task:&lt;n&gt;</c>, <c>turn:&lt;n&gt;</c> or an area id), <c>--areas-expand</c> (area id), <c>--lang</c> (<c>en</c> or <c>es</c>: language of this run) and, to
 /// capture the window in automatic checks, <c>--capture</c>, <c>--capture-delay</c> and <c>--render=software</c>.
 /// What is not understood is recorded in <see cref="Warnings"/> and does not prevent startup.
 /// </summary>
@@ -34,6 +35,10 @@ public sealed record StartupOptions(
     string? HeatmapFilter,
     string? HeatmapArea,
     string? HeatmapSelect,
+    string? AreasGroup,
+    string? AreasFilter,
+    string? AreasSelect,
+    string? AreasExpand,
     string? Lang,
     string? Capture,
     int CaptureDelayMillis,
@@ -45,9 +50,11 @@ public sealed record StartupOptions(
 
     private static readonly HashSet<string> KnowledgeViews = ["2d", "3d", "top", "side"];
 
-    private static readonly HashSet<string> Tabs = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap"];
+    private static readonly HashSet<string> Tabs = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap", "areas"];
 
     private static readonly HashSet<string> HeatmapAreas = ["size", "activity"];
+
+    private static readonly HashSet<string> AreasGroups = ["layer", "module", "kind"];
 
     public static StartupOptions Parse(IEnumerable<string> args)
     {
@@ -99,6 +106,13 @@ public sealed record StartupOptions(
             heatmapArea = null;
         }
 
+        string? areasGroup = Text(named, "areas-group")?.ToLowerInvariant();
+        if (areasGroup is not null && !AreasGroups.Contains(areasGroup))
+        {
+            warnings.Add(string.Format(CultureInfo.CurrentCulture, ShellStrings.StartupWarningUnknownAreasGroupFormat, areasGroup));
+            areasGroup = null;
+        }
+
         string? lang = null;
         if (Text(named, "lang") is { } langText)
         {
@@ -143,6 +157,10 @@ public sealed record StartupOptions(
             Text(named, "heatmap-filter"),
             heatmapArea,
             Text(named, "heatmap-select"),
+            areasGroup,
+            Text(named, "areas-filter"),
+            Text(named, "areas-select"),
+            Text(named, "areas-expand"),
             lang,
             Text(named, "capture"),
             delay,

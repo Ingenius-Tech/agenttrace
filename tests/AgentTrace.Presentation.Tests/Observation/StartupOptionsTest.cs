@@ -33,6 +33,7 @@ public sealed class StartupOptionsTest : TempDirTestBase
             Dir.Value, "--open=a.txt", "--diff=b.txt", "--tab=Knowledge", "--kg-select=c.txt", "--graph-select=last-error",
             "--graph-collapse=old", "--graph-orientation=vertical", "--graph-filter=errors,reads", "--graph-zoom=0.5", "--kg-view=3d", "--kg-yaw=-45", "--kg-pitch=20.5", "--search=mvn error",
             "--heatmap-zoom=src", "--heatmap-filter=errors", "--heatmap-area=Activity", "--heatmap-select=src/a.cs",
+            "--areas-group=Module", "--areas-filter=writes", "--areas-select=task:2", "--areas-expand=core",
             "--capture=out.png", "--capture-delay=250", "--capture-mode=printwindow", "--render=software"]);
         Assert.Equal("a.txt", o.Open); // the relative path is understood from the project, not from where it is started
         Assert.Equal("b.txt", o.Diff);
@@ -51,6 +52,10 @@ public sealed class StartupOptionsTest : TempDirTestBase
         Assert.Equal("errors", o.HeatmapFilter);
         Assert.Equal("activity", o.HeatmapArea);
         Assert.Equal("src/a.cs", o.HeatmapSelect);
+        Assert.Equal("module", o.AreasGroup);
+        Assert.Equal("writes", o.AreasFilter);
+        Assert.Equal("task:2", o.AreasSelect);
+        Assert.Equal("core", o.AreasExpand);
         Assert.Equal("out.png", o.Capture);
         Assert.Equal(250, o.CaptureDelayMillis);
         Assert.True(o.SoftwareRendering);
@@ -94,6 +99,20 @@ public sealed class StartupOptionsTest : TempDirTestBase
         Assert.Null(none.HeatmapFilter);
         Assert.Null(none.HeatmapArea);
         Assert.Null(none.HeatmapSelect);
+    }
+
+    [Fact]
+    public void TheAreasTabAndItsOptionsAreKnown()
+    {
+        Assert.Equal("areas", StartupOptions.Parse(["--tab=Areas"]).Tab);
+        StartupOptions none = StartupOptions.Parse([]);
+        Assert.Null(none.AreasGroup);
+        Assert.Null(none.AreasFilter);
+        Assert.Null(none.AreasSelect);
+        Assert.Null(none.AreasExpand);
+        StartupOptions bad = StartupOptions.Parse(["--areas-group=floor"]);
+        Assert.Null(bad.AreasGroup);
+        Assert.Equal(["Unknown --areas-group: floor"], bad.Warnings);
     }
 
     [Theory]

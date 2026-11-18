@@ -7,8 +7,9 @@ namespace AgentTrace.Core.Areas;
 /// What happened to a file in a turn. <c>Reads</c>: reads by the agent. <c>Writes</c>: changes made by the agent (created, modified or deleted).
 /// <c>External</c>: changes nothing in the trace explains. <c>Errors</c>: failed calls whose target is this file. <c>Order</c>: position of the first
 /// touch within the turn (calls in time order; changes that no call explains come after all of them), to order what happened first.
+/// <c>WriteOrder</c>: the same for the first change (writes or external), null if there is none.
 /// </summary>
-public sealed record AreaFileActivity(FilePath Path, int Reads, int Writes, int External, int Errors, int Order);
+public sealed record AreaFileActivity(FilePath Path, int Reads, int Writes, int External, int Errors, int Order, int? WriteOrder = null);
 
 /// <summary>The files touched in a turn, ordered by first touch. <c>Turn</c> is a turn index of the flow (it may be 0 with no turns in the flow, see <see cref="AreaActivityBuilder"/>).</summary>
 public sealed record AreaTurnActivity(int Turn, ValueList<AreaFileActivity> Files);
@@ -94,7 +95,7 @@ public static class AreaActivityBuilder
         foreach (IGrouping<int, KeyValuePair<(int Turn, FilePath Path), Counts>> turn in counts.GroupBy(kv => kv.Key.Turn).OrderBy(g => g.Key))
         {
             List<AreaFileActivity> files = turn
-                .Select(kv => new AreaFileActivity(kv.Key.Path, kv.Value.Reads, kv.Value.Writes, kv.Value.External, kv.Value.Errors, kv.Value.Order))
+                .Select(kv => new AreaFileActivity(kv.Key.Path, kv.Value.Reads, kv.Value.Writes, kv.Value.External, kv.Value.Errors, kv.Value.Order, kv.Value.WriteOrder))
                 .OrderBy(f => f.Order).ThenBy(f => f.Path.Value, StringComparer.Ordinal).ToList();
             turns.Add(new AreaTurnActivity(turn.Key, files.ToValueList()));
         }
@@ -123,10 +124,11 @@ public static class AreaActivityBuilder
         return null;
     }
 
-    private readonly record struct Counts(int Reads, int Writes, int External, int Errors, int Order)
+    private readonly record struct Counts(int Reads, int Writes, int External, int Errors, int Order, int? WriteOrder)
     {
         public Counts Plus(int order, int reads, int writes, int external, int errors) => new(
             Reads + reads, Writes + writes, External + external, Errors + errors,
-            Reads + Writes + External + Errors == 0 ? order : Math.Min(Order, order));
+            Reads + Writes + External + Errors == 0 ? order : Math.Min(Order, order),
+            writes + external > 0 ? Math.Min(WriteOrder ?? int.MaxValue, order) : WriteOrder);
     }
 }
