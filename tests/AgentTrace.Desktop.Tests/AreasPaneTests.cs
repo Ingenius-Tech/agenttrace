@@ -184,6 +184,12 @@ public sealed class AreasPaneTests : TempDirTestBase
         // Data was changed first and then the API: two points, in that order
         IReadOnlyList<(int Row, int Column)> path = pane.Canvas.Matrix.Propagation(0);
         Assert.Equal([(0, 0), (1, 0)], path);
+        // The header summarizes the task and flags a change with no test (the rules define a "test" kind); the task that only wrote a test has no badge
+        IReadOnlyList<AreaTaskSummary> summaries = pane.Canvas.Matrix.Snapshot.Summaries;
+        Assert.Equal(AreaBadges.UntestedChange, summaries[0].Badges);
+        Assert.Equal(["Data", "API"], summaries[0].LayerOrder.Select(r => pane.Canvas.Matrix.Snapshot.NameOf(r)).ToArray());
+        Assert.Equal(AreaBadges.None, summaries[1].Badges);
+        Assert.Equal(AreaBadges.UntestedChange, summaries[2].Badges);
         Save(window, "areas-task");
 
         // The same click again deselects, as Escape does

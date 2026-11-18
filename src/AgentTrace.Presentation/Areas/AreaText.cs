@@ -42,4 +42,26 @@ public static class AreaText
     /// <summary>Tooltip of a row header: the name and what the agent did there.</summary>
     public static string RowTooltip(string name, FileActivity total, int files, ActivityFilter filter) =>
         name + "\n" + HeatText.Count(files, MapStrings.CountFiles_One, MapStrings.CountFiles_Other) + " · " + Counts(total, filter);
+
+    /// <summary>"3 files · 2 layers · 1 module": what the task touched.</summary>
+    public static string TaskCounts(AreaTaskSummary s) => string.Join(" · ",
+        HeatText.Count(s.Files, MapStrings.CountFiles_One, MapStrings.CountFiles_Other),
+        HeatText.Count(s.Layers.Count, AreaStrings.CountLayers_One, AreaStrings.CountLayers_Other),
+        HeatText.Count(s.Modules.Count, AreaStrings.CountModules_One, AreaStrings.CountModules_Other));
+
+    /// <summary>"First changes: Data → Domain → API": the layers in the order the agent first changed them; null if it changed none.</summary>
+    public static string? TaskOrder(AreaTaskSummary s, Func<AreaRef, string> name) => s.LayerOrder.Count == 0
+        ? null
+        : string.Format(CultureInfo.CurrentCulture, AreaStrings.SummaryOrderFormat, string.Join(" → ", s.LayerOrder.Select(name)));
+
+    /// <summary>The text of each badge the task has, plus, when tests cannot be checked, the note that says so.</summary>
+    public static IReadOnlyList<string> BadgeTexts(AreaTaskSummary s)
+    {
+        List<string> texts = [];
+        if (s.Badges.HasFlag(AreaBadges.UntestedChange)) texts.Add(AreaStrings.BadgeUntested);
+        if (s.Badges.HasFlag(AreaBadges.CrossModule)) texts.Add(string.Format(CultureInfo.CurrentCulture, AreaStrings.BadgeCrossModuleFormat, LocalNumbers.Grouped(s.WrittenModules.Count)));
+        if (s.Badges.HasFlag(AreaBadges.SharedTouched)) texts.Add(AreaStrings.BadgeShared);
+        if (!s.TestsKnown) texts.Add(AreaStrings.BadgeNotComputed);
+        return texts;
+    }
 }

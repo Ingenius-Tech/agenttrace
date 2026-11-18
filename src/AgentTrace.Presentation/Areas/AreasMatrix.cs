@@ -6,17 +6,52 @@ using AgentTrace.Presentation.Resources;
 
 namespace AgentTrace.Presentation.Areas;
 
-/// <summary>What the matrix is built from: the flow (turns and prompts), the activity per file, and the rules of each repository.</summary>
-public sealed record AreasSnapshot(FlowGraph Flow, AreaActivity Activity, AreaRepoSet Repos, FilePath Project)
+/// <summary>
+/// What the matrix is built from: the flow (turns and prompts), the activity per file, and the rules of each repository. It also holds what is
+/// derived once from them: the tasks and their summaries (files, layers, order of the changes, badges).
+/// </summary>
+public sealed class AreasSnapshot
 {
     public static readonly AreasSnapshot Empty = new(new FlowBuilder().Snapshot(), AreaActivity.Empty, AreaRepoSet.Empty, new FilePath("."));
 
+    public AreasSnapshot(FlowGraph flow, AreaActivity activity, AreaRepoSet repos, FilePath project)
+    {
+        Flow = flow;
+        Activity = activity;
+        Repos = repos;
+        Project = project;
+        Tasks = TaskGrouping.Of(flow.Turns);
+        bool testKind = repos.Repos.Any(r => r.Rules.Areas.Any(a => a.Dimension == AreaDimension.Kind && a.Id == AreaTaskSummaries.TestKindId));
+        Summaries = AreaTaskSummaries.Of(Tasks, activity, Classify, testKind);
+    }
+
+    public FlowGraph Flow { get; }
+
+    public AreaActivity Activity { get; }
+
+    public AreaRepoSet Repos { get; }
+
+    public FilePath Project { get; }
+
     /// <summary>The tasks of the flow, in order.</summary>
-    public ValueList<AreaTask> Tasks { get; } = TaskGrouping.Of(Flow.Turns);
+    public ValueList<AreaTask> Tasks { get; }
+
+    /// <summary>What each task did, in the order of <see cref="Tasks"/>.</summary>
+    public ValueList<AreaTaskSummary> Summaries { get; }
 
     /// <summary>Computes the activity per file from the flow and the git changes. Call it off the UI thread: it walks every step.</summary>
     public static AreasSnapshot Of(FlowGraph flow, IReadOnlyList<ChangeEntry> changes, AreaRepoSet repos, FilePath project) =>
         new(flow, AreaActivityBuilder.Build(flow, changes, project), repos, project);
+
+    /// <summary>The name of an area (the id if the rules no longer have it).</summary>
+    public string NameOf(AreaRef area) =>
+        Repos.Repos.FirstOrDefault(r => r.Root.Value == area.Repo)?.Find(area.Id)?.Name ?? area.Id;
+
+    private AreaClassification? Classify(FilePath path)
+    {
+        (AreaRepo? repo, AreaAssignment assignment) = Repos.Classify(path);
+        return repo is null ? null : new AreaClassification(repo.Root.Value, assignment, assignment.Module is { } m && repo.Find(m)?.Shared == true);
+    }
 }
 
 /// <summary>A row is an area of the chosen dimension in one repository (<c>AreaId</c> null: the files that match none).</summary>

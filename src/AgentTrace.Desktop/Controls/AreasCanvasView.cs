@@ -9,6 +9,7 @@ using AgentTrace.Desktop.Theme;
 using AgentTrace.Presentation.Areas;
 using AgentTrace.Presentation.Heatmap;
 using AgentTrace.Presentation.Resources;
+using AgentTrace.Presentation.Text;
 
 namespace AgentTrace.Desktop.Controls;
 
@@ -23,6 +24,7 @@ public sealed class AreasCanvasView : Control
     private static readonly Typeface SansBold = new("Segoe UI, Inter, Helvetica, Arial, sans-serif", FontStyle.Normal, FontWeight.Bold);
 
     private readonly Dictionary<(string Text, double Size, Color Color, int Width, bool Bold), FormattedText> _texts = [];
+    private readonly Dictionary<(Codicon Icon, Color Color), FormattedText> _glyphs = [];
     private readonly HashSet<AreaRowKey> _expanded = [];
     private readonly Action<FilePath> _openFile;
 
@@ -279,9 +281,14 @@ public sealed class AreasCanvasView : Control
                     : row.Label + "\n" + AreaText.Counts(row.Total, _matrix.Filter);
             case AreasHitKind.TaskHeader:
                 AreaTask task = _matrix.Bands[hit.Column].Task;
-                string title = AreaText.TaskTitle(task);
                 string? prompt = _matrix.Snapshot.Flow.Turns[task.FirstTurn].Prompt;
-                return string.IsNullOrWhiteSpace(prompt) ? title : title + "\n" + Shorten(prompt);
+                AreaTaskSummary summary = _matrix.Snapshot.Summaries[task.Index];
+                List<string> lines = [AreaText.TaskTitle(task)];
+                if (!string.IsNullOrWhiteSpace(prompt)) lines.Add(Shorten(prompt));
+                lines.Add(AreaText.TaskCounts(summary));
+                if (AreaText.TaskOrder(summary, _matrix.Snapshot.NameOf) is { } order) lines.Add(order);
+                lines.AddRange(AreaText.BadgeTexts(summary));
+                return string.Join("\n", lines);
             case AreasHitKind.TurnHeader:
                 return AreaText.TurnTitle(_matrix.Columns[hit.Column].Turn);
             default:
@@ -416,7 +423,10 @@ public sealed class AreasCanvasView : Control
             bool selected = band.Task.Index == _selectedTask;
             var rect = new Rect(x + 1, 2, width - 2, AreasGeometry.TaskBandHeight - 4);
             ctx.DrawRectangle(AppColors.Brush(selected ? AppColors.Border : AppColors.Card), selected ? new Pen(AppColors.Brush(AppColors.Select), 2) : null, rect, 4, 4);
-            DrawText(ctx, AreaText.TaskTitle(band.Task), x + 6, 4, 11, AppColors.Text, (int)Math.Max(0, width - 12), bold: true);
+            AreaTaskSummary summary = _matrix.Snapshot.Summaries[band.Task.Index];
+            double badgesWidth = PaintBadges(ctx, summary, x + width - 6, 5);
+            DrawText(ctx, AreaText.TaskTitle(band.Task), x + 6, 4, 11, AppColors.Text, (int)Math.Max(0, width - 12 - badgesWidth), bold: true);
+            DrawText(ctx, AreaText.TaskCounts(summary), x + 6, 20, 10, AppColors.Muted, (int)Math.Max(0, width - 12));
         }
         for (int c = c0; c <= c1; c++)
         {
@@ -426,6 +436,30 @@ public sealed class AreasCanvasView : Control
             if (selected) ctx.FillRectangle(AppColors.Brush(AppColors.Border), new Rect(x, AreasGeometry.TaskBandHeight, cw, AreasGeometry.TurnBandHeight));
             DrawText(ctx, (_matrix.Columns[c].Turn + 1).ToString(CultureInfo.CurrentCulture), x + 4, AreasGeometry.TaskBandHeight + 2, 10, selected ? AppColors.Text : AppColors.Muted, (int)Math.Max(0, cw - 6));
         }
+    }
+
+    /// <summary>Draws the badges of a task right-aligned ending at <paramref name="right"/>; returns the width they take.</summary>
+    private double PaintBadges(DrawingContext ctx, AreaTaskSummary summary, double right, double y)
+    {
+        (AreaBadges Badge, Codicon Icon, Color Color)[] all =
+        [
+            (AreaBadges.UntestedChange, Codicon.Question, AppColors.Modified),
+            (AreaBadges.CrossModule, Codicon.RepoForked, AppColors.Read),
+            (AreaBadges.SharedTouched, Codicon.Link, AppColors.Deleted),
+        ];
+        double taken = 0;
+        foreach ((AreaBadges badge, Codicon icon, Color color) in all)
+        {
+            if (!summary.Badges.HasFlag(badge)) continue;
+            taken += 15;
+            if (!_glyphs.TryGetValue((icon, color), out FormattedText? glyph))
+            {
+                glyph = new FormattedText(Codicons.Glyph(icon), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface(Codicons.Font), 12, AppColors.Brush(color));
+                _glyphs[(icon, color)] = glyph;
+            }
+            ctx.DrawText(glyph, new Point(right - taken + 2, y));
+        }
+        return taken;
     }
 
     private void PaintRowHeaders(DrawingContext ctx, double h)
