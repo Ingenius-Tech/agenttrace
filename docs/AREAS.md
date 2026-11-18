@@ -100,7 +100,9 @@ prompt opens a task and the turns that continue without a new prompt belong to i
 reads, writes and errors with the same colors as the tree. A file the trace reports as changed and git also reports is counted
 once; changes only git sees (a console command that writes) are placed in the turn of the call they are attributed to, or counted as
 external. Clicking a cell lists its files; double clicking a row header lists the files of that area with activity; selecting a task
-header draws the order in which the layers were first changed.
+header draws the order in which the layers were first changed. In the **Panorama** tab (`Ctrl+8`) these selections also highlight
+the related steps and files in the Execution graph and Knowledge, and a step, turn or file selected there highlights the matching
+turns and rows here.
 
 ### Limitations
 
