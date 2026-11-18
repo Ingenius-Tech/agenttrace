@@ -76,6 +76,7 @@ cell is the size on disk (you see the cold zones) or the activity. A light outli
 dashed one marks external changes (red, what was deleted). Hovering gives the detail, clicking selects (with the file's
 panel), double click opens the file or zooms into the folder, `Backspace`, `Alt`+`↑` or the breadcrumbs go up, and the context
 menu offers open, view diff, show in tree, view in "Knowledge" and zoom in. It updates live.
+* **Areas map** (`Ctrl+7`): a macro view of what the agent works on: rows are **areas** (an architectural layer, a module or a kind of change, chosen with "Group by") and columns are the agent's turns grouped into tasks (each prompt opens a task). Cells show reads, writes and errors with the same colors as the tree; clicking a cell lists its files (open or view diff), double clicking a row lists the files of that area, and selecting a task header summarizes it, traces the order in which the layers were first changed and shows badges (code changed without tests, changes in several modules, shared or contract code changed). The application knows nothing about languages, so areas come from a rules file, `.agenttrace/areas.json` at the root of each repository (format, first-match rule and glob contract in `docs/AREAS.md`); without it the tab uses suggested modules (from build manifests) and kinds (tests, docs, migrations...), and its **Copy setup prompt** button copies (only when you click it) a prompt for your coding agent to write the file. A strip shows where the rules come from, the coverage of each dimension, and the errors of an invalid file; writing the file in a running application is picked up live.
 * **Search** (`Ctrl+K`): modeless window that searches everything that happened in the active session (requests, answers,
 reasoning, tools with their input and output, errors and files), case- and accent-insensitive, with filters by
 type, thread (main or subagents) and turn. Enter or a double click takes you to the graph's step or turn, or opens the file.
@@ -118,12 +119,12 @@ dotnet publish src/AgentTrace.Desktop -c Release -r win-x64 -o artifacts/publish
 
 Requirements: .NET 10 SDK and `git` (without it, only the trace actions are shown, without diffs; another executable can be given with `AGENTTRACE_GIT=<path>`).
 Arguments: `<project>`, `--open`, `--diff`, `--tab`, `--kg-select`, `--graph-select`, `--graph-collapse`, `--graph-orientation`,
-`--graph-filter`, `--graph-zoom`, `--kg-view=2d|3d|top|side`, `--kg-yaw`, `--kg-pitch`, `--search=<text>`, `--lang=en|es` and, to check the window without a mouse, `--capture=<png> [--capture-delay=<ms>] [--capture-mode=printwindow] [--render=software]`.
-Shortcuts: `Ctrl+O` open project, `Ctrl+1`…`Ctrl+6` switch tab, `Ctrl+K` search, `Ctrl+T` open a system terminal in the project folder. Synthetic traces and tests are in `tests/`.
+`--graph-filter`, `--graph-zoom`, `--kg-view=2d|3d|top|side`, `--kg-yaw`, `--kg-pitch`, `--areas-group=layer|module|kind`, `--areas-filter=reads,writes,errors`, `--areas-select=task:<n>|turn:<n>|<areaId>`, `--areas-expand=<areaId>`, `--search=<text>`, `--lang=en|es` and, to check the window without a mouse, `--capture=<png> [--capture-delay=<ms>] [--capture-mode=printwindow] [--render=software]`.
+Shortcuts: `Ctrl+O` open project, `Ctrl+1`…`Ctrl+7` switch tab, `Ctrl+K` search, `Ctrl+T` open a system terminal in the project folder. Synthetic traces and tests are in `tests/`.
 
 ```
 src/
-  AgentTrace.Core/                  Neutral model (events, FilePath, correlation, graphs) with no dependencies
+  AgentTrace.Core/                  Neutral model (events, FilePath, correlation, graphs, area rules and classifier) with no dependencies
   AgentTrace.Diff/                  Diff engine (DiffPlex)
   AgentTrace.Ingest/                Following of traces, changes and the file system
   AgentTrace.Git/                   Changes according to git (read-only)
@@ -139,6 +140,7 @@ tests/                            Unit, integration, acceptance and UI (headless
 AgentTrace.slnx   .NET solution (global.json, Directory.*.props)
 src/, tests/      Code and tests (structure in "Stack and usage")
 docs/ADAPTERS.md  How to add an agent
+docs/AREAS.md     Areas map: rules file format and glob contract
 LICENSE, NOTICE   Apache 2.0 license and attribution notice
 THIRD_PARTY_NOTICES.md  Licenses of the third-party components
 CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md   Collaboration, conduct and security
