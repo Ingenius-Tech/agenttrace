@@ -50,7 +50,7 @@ public sealed record StartupOptions(
 
     private static readonly HashSet<string> KnowledgeViews = ["2d", "3d", "top", "side"];
 
-    private static readonly HashSet<string> Tabs = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap", "areas"];
+    private static readonly HashSet<string> Tabs = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap", "areas", "panorama"];
 
     private static readonly HashSet<string> HeatmapAreas = ["size", "activity"];
 

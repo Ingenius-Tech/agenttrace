@@ -26,7 +26,7 @@ using AgentTrace.Presentation.Text;
 namespace AgentTrace.Desktop;
 
 /// <summary>
-/// The main window: top bar, project tree, six tabs and status bar. It only presents: what is
+/// The main window: top bar, project tree, eight tabs and status bar. It only presents: what is
 /// observed (traces, git, correlation) is done by <see cref="ProjectObserver"/>; the orchestration is in <c>MainWindow.Project.cs</c>.
 /// </summary>
 public sealed partial class MainWindow : Window
@@ -42,6 +42,7 @@ public sealed partial class MainWindow : Window
     public const int KnowledgeTab = 4;
     public const int HeatmapTab = 5;
     public const int AreasTab = 6;
+    public const int PanoramaTab = 7;
 
     private readonly IReadOnlyList<IAgentAdapter> _adapters;
     private readonly RecentProjects _recent;
@@ -59,6 +60,10 @@ public sealed partial class MainWindow : Window
     private readonly KnowledgePane _knowledge;
     private readonly HeatmapPane _heatmap;
     private readonly AreasPane _areas;
+    private readonly PanoramaPane _panorama;
+    private readonly PaneSlot _graphSlot;
+    private readonly PaneSlot _areasSlot;
+    private readonly PaneSlot _knowledgeSlot;
     private readonly Button _terminalButton = new()
     {
         Content = new StackPanel
@@ -99,19 +104,31 @@ public sealed partial class MainWindow : Window
         _knowledge = new KnowledgePane(path => OpenFile(path), ShowInInspector);
         _heatmap = new HeatmapPane(path => OpenFile(path), ShowInInspector, path => _tree.Reveal(path), ShowInKnowledge);
         _areas = new AreasPane(path => OpenFile(path), ShowInInspector);
+        _graphSlot = new PaneSlot(_graph);
+        _areasSlot = new PaneSlot(_areas);
+        _knowledgeSlot = new PaneSlot(_knowledge);
+        _panorama = new PanoramaPane(_graphSlot, _areasSlot, _knowledgeSlot);
         WireDiffPane();
         Content = BuildUi();
         _statusBar.Message = ShellStrings.StatusReady;
         _statusBar.SetStats(StatusSegments.Of(_stats));
         KeyDown += OnShortcut;
         Closing += (_, _) => Shutdown();
-        // The knowledge graph and the heatmap are only recomputed with their tab in view: coming back to it brings them up to date
+        // The knowledge graph, the heatmap and the areas map are only recomputed while in view (their tab, or the Panorama showing them):
+        // coming back to them brings them up to date. The Panorama takes the three panes out of their tabs and gives them back.
         _tabs.SelectionChanged += (_, e) =>
         {
             if (!ReferenceEquals(e.Source, _tabs)) return;
-            if (_tabs.SelectedIndex == KnowledgeTab) RefreshKnowledge();
-            else if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
-            else if (_tabs.SelectedIndex == AreasTab) RefreshAreas();
+            if (_tabs.SelectedIndex == PanoramaTab) _panorama.Attach();
+            else _panorama.Detach();
+            if (KnowledgeShown) RefreshKnowledge();
+            if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
+            if (AreasShown) RefreshAreas();
+        };
+        _panorama.VisibilityChanged += () =>
+        {
+            if (KnowledgeShown) RefreshKnowledge();
+            if (AreasShown) RefreshAreas();
         };
 
         // Avalonia may overwrite the DWM attributes when creating the window: they are applied after Opened.
@@ -144,6 +161,8 @@ public sealed partial class MainWindow : Window
     public HeatmapPane Heatmap => _heatmap;
 
     public AreasPane Areas => _areas;
+
+    public PanoramaPane Panorama => _panorama;
 
     public FilePath? CurrentProject { get; private set; }
 
@@ -181,13 +200,15 @@ public sealed partial class MainWindow : Window
         left.Children.Add(leftTop);
         left.Children.Add(_tree);
 
-        AddTab(ShellStrings.TabExecutionGraph, "Ctrl+1", _graph);
+        // The panes of the Panorama live in slots, so their own tabs keep a permanent content that the Panorama can borrow
+        AddTab(ShellStrings.TabExecutionGraph, "Ctrl+1", _graphSlot);
         AddTab(ShellStrings.TabDiffInspector, "Ctrl+2", _diff);
         AddTab(ShellStrings.TabProcessTelemetry, "Ctrl+3", _telemetry);
         AddTab(ShellStrings.TabFile, "Ctrl+4", _file);
-        AddTab(ShellStrings.TabKnowledge, "Ctrl+5", _knowledge);
+        AddTab(ShellStrings.TabKnowledge, "Ctrl+5", _knowledgeSlot);
         AddTab(ShellStrings.TabHeatmap, "Ctrl+6", _heatmap);
-        AddTab(ShellStrings.TabAreas, "Ctrl+7", _areas);
+        AddTab(ShellStrings.TabAreas, "Ctrl+7", _areasSlot);
+        AddTab(ShellStrings.TabPanorama, "Ctrl+8", _panorama);
 
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("300,Auto,*") };
         split.Children.Add(left);
@@ -326,6 +347,7 @@ public sealed partial class MainWindow : Window
             Key.D5 => KnowledgeTab,
             Key.D6 => HeatmapTab,
             Key.D7 => AreasTab,
+            Key.D8 => PanoramaTab,
             _ => null,
         };
         if (tab is { } index)
@@ -391,7 +413,7 @@ public sealed partial class MainWindow : Window
         if (options.AreasSelect is not null || options.AreasExpand is not null) _areas.SetPending(options.AreasSelect, options.AreasExpand);
         if (options.Tab is { } tab)
         {
-            SwitchTab(tab switch { "graph" => GraphTab, "diff" => DiffTab, "telemetry" => TelemetryTab, "file" => FileTab, "knowledge" => KnowledgeTab, "heatmap" => HeatmapTab, "areas" => AreasTab, _ => GraphTab });
+            SwitchTab(tab switch { "graph" => GraphTab, "diff" => DiffTab, "telemetry" => TelemetryTab, "file" => FileTab, "knowledge" => KnowledgeTab, "heatmap" => HeatmapTab, "areas" => AreasTab, "panorama" => PanoramaTab, _ => GraphTab });
         }
     }
 

@@ -481,7 +481,7 @@ public sealed partial class MainWindow
     private void ScheduleKnowledgeRefresh()
     {
         _knowledgeDirty = true;
-        if (_knowledgeRefreshPending || _tabs.SelectedIndex != KnowledgeTab) return;
+        if (_knowledgeRefreshPending || !KnowledgeShown) return;
         _knowledgeRefreshPending = true;
         DispatcherTimer.RunOnce(() =>
         {
@@ -600,7 +600,7 @@ public sealed partial class MainWindow
     private void ScheduleAreasRefresh()
     {
         _areasDirty = true;
-        if (_areasRefreshPending || _tabs.SelectedIndex != AreasTab) return;
+        if (_areasRefreshPending || !AreasShown) return;
         _areasRefreshPending = true;
         DispatcherTimer.RunOnce(() =>
         {

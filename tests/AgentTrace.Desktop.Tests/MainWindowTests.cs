@@ -18,7 +18,7 @@ namespace AgentTrace.Desktop.Tests;
 
 /// <summary>
 /// The whole window, end to end and without a screen: a project with real git, an agent whose trace is the synthetic Claude Code
-/// one and the seven tabs populated.
+/// one and the eight tabs populated.
 /// </summary>
 public sealed class MainWindowTests : TempDirTestBase
 {
@@ -87,7 +87,7 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task AnObservedProjectFillsTheSevenTabsAndTheKeyboardSwitchesThem()
+    public Task AnObservedProjectFillsTheEightTabsAndTheKeyboardSwitchesThem()
     {
         Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
         GitFixture repo = GitFixture.Init(Dir.Combine("project"));
@@ -120,8 +120,8 @@ public sealed class MainWindowTests : TempDirTestBase
             Assert.Equal(MainWindow.FileTab, window.Tabs.SelectedIndex);
             Pump("its content", () => window.FileView.Viewer.Text.Contains("# Project", StringComparison.Ordinal));
 
-            // Ctrl+1..7 switch tabs (the sixth is the heatmap, the seventh the areas map)
-            for (int i = 1; i <= 7; i++)
+            // Ctrl+1..8 switch tabs (the sixth is the heatmap, the seventh the areas map, the eighth the Panorama)
+            for (int i = 1; i <= 8; i++)
             {
                 Key key = Key.D1 + (i - 1);
                 window.KeyPress(key, RawInputModifiers.Control, PhysicalKey.Digit1 + (i - 1), i.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -391,12 +391,12 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task TheWindowOpensWithTheDarkThemeTheTitleAndSevenTabs() => HeadlessHost.Run(() =>
+    public Task TheWindowOpensWithTheDarkThemeTheTitleAndEightTabs() => HeadlessHost.Run(() =>
     {
         var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")));
         window.Show();
         Assert.Equal(MainWindow.AppTitle, window.Title);
-        Assert.Equal(7, window.Tabs.ItemCount);
+        Assert.Equal(8, window.Tabs.ItemCount);
         Assert.Equal(MainWindow.GraphTab, window.Tabs.SelectedIndex);
         window.Close();
     });
@@ -408,9 +408,9 @@ public sealed class MainWindowTests : TempDirTestBase
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
         Assert.Equal(
-            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap, ShellStrings.TabAreas],
+            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap, ShellStrings.TabAreas, ShellStrings.TabPanorama],
             headers);
-        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap", "Areas map"], headers);
+        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap", "Areas map", "Panorama"], headers);
         Assert.Equal("Ready: open a project to start", window.StatusBar.Message);
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "No project open");
         window.Close();
@@ -423,7 +423,7 @@ public sealed class MainWindowTests : TempDirTestBase
         var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
-        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor", "Mapa de áreas"], headers); // lang-ok
+        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor", "Mapa de áreas", "Vista global"], headers); // lang-ok
         Assert.Equal("Listo: abre un proyecto para empezar", window.StatusBar.Message); // lang-ok
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "Ningún proyecto abierto"); // lang-ok
         window.Close();

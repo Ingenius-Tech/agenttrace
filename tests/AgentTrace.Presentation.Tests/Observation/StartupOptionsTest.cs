@@ -102,6 +102,12 @@ public sealed class StartupOptionsTest : TempDirTestBase
     }
 
     [Fact]
+    public void ThePanoramaTabIsKnown()
+    {
+        Assert.Equal("panorama", StartupOptions.Parse(["--tab=Panorama"]).Tab);
+    }
+
+    [Fact]
     public void TheAreasTabAndItsOptionsAreKnown()
     {
         Assert.Equal("areas", StartupOptions.Parse(["--tab=Areas"]).Tab);

@@ -137,6 +137,14 @@
     <value>Areas map</value>
     <comment>Tab header.</comment>
   </data>
+  <data name="TabPanorama" xml:space="preserve">
+    <value>Panorama</value>
+    <comment>Tab header: the graph, the Areas map and Knowledge side by side.</comment>
+  </data>
+  <data name="PanoramaToggleTipFormat" xml:space="preserve">
+    <value>Show or hide {0}</value>
+    <comment>Tooltip of a pane toggle in the Panorama. {0} = the pane name.</comment>
+  </data>
   <data name="TerminalButton" xml:space="preserve">
     <value>Terminal</value>
     <comment>Top bar button that opens a system terminal.</comment>
