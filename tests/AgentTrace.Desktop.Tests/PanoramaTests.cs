@@ -10,6 +10,7 @@ using AgentTrace.Core;
 using AgentTrace.Desktop.Controls;
 using AgentTrace.Presentation.Graph;
 using AgentTrace.Presentation.Observation;
+using AgentTrace.Presentation.Panorama;
 using AgentTrace.Testing;
 using static AgentTrace.Desktop.Tests.MainWindowTests;
 
@@ -31,9 +32,9 @@ public sealed class PanoramaTests : TempDirTestBase
         return (repo, trace, new RecentProjects(Dir.Combine("history.txt")));
     }
 
-    private static MainWindow Open(GitFixture repo, FilePath trace, RecentProjects recent, double width = 1400)
+    private MainWindow Open(GitFixture repo, FilePath trace, RecentProjects recent, double width = 1400)
     {
-        var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = width, Height = 850 };
+        var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = width, Height = 850 };
         window.Show();
         window.OpenProject(repo.Dir);
         Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0);
@@ -263,6 +264,93 @@ public sealed class PanoramaTests : TempDirTestBase
             Settle(window);
             Assert.True(window.Graph.Bounds.Width >= 2 * DetailPane.PaneWidth, window.Graph.Bounds.ToString());
             Assert.Equal(Avalonia.Controls.Dock.Right, DockPanel.GetDock(host));
+            window.Close();
+        });
+    }
+
+    private FilePath PreferenceFile => Dir.Combine("panorama.txt");
+
+    [Fact]
+    public Task TheSavedLayoutIsRestoredWhenTheWindowOpens()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        File.WriteAllText(PreferenceFile.Value, "graph=true\nareas=false\nknowledge=true\ncolumn=0.6\nrow=0.5\n");
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            window.SwitchTab(MainWindow.PanoramaTab);
+            Settle(window);
+            PanoramaPane panorama = window.Panorama;
+            Assert.True(panorama.GraphVisible);
+            Assert.False(panorama.AreasVisible);
+            Assert.True(panorama.KnowledgeVisible);
+            Assert.False(window.Areas.IsVisible);
+            Assert.Equal(0.6, panorama.Layout.ColumnRatio, 3);
+            Assert.Equal(0.6, window.Graph.Bounds.Width / (window.Graph.Bounds.Width + window.Knowledge.Bounds.Width), 1);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task ACorruptFileMeansTheDefaultLayoutWithTheRatiosKeptInRange()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        File.WriteAllText(PreferenceFile.Value, "\0\0 not a layout =\ngraph=maybe\ncolumn=9\n");
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            Assert.Equal(PanoramaLayout.Default with { ColumnRatio = PanoramaLayout.MaxRatio }, window.Panorama.Layout);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task TogglesAndSplittersSaveTheLayoutAndANewWindowRestoresIt()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            window.SwitchTab(MainWindow.PanoramaTab);
+            Settle(window);
+            Assert.False(File.Exists(PreferenceFile.Value)); // opening and showing the Panorama write nothing
+
+            Click(window, window.Panorama.KnowledgeToggle);
+            Assert.Contains("knowledge=false", File.ReadAllText(PreferenceFile.Value), StringComparison.Ordinal);
+            Settle(window);
+            Point p = Center(window.Panorama.ColumnSplitter, window);
+            window.MouseDown(p, MouseButton.Left);
+            window.MouseMove(p + new Point(150, 0));
+            window.MouseUp(p + new Point(150, 0), MouseButton.Left);
+            Settle(window);
+            PanoramaLayout saved = new PanoramaPreference(PreferenceFile).Load();
+            Assert.False(saved.Knowledge);
+            Assert.True(saved.ColumnRatio > PanoramaLayout.Default.ColumnRatio + 0.05, saved.ColumnRatio.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            window.Close();
+
+            MainWindow again = Open(repo, trace, recent);
+            Assert.False(again.Panorama.KnowledgeVisible);
+            Assert.Equal(saved.ColumnRatio, again.Panorama.Layout.ColumnRatio, 3);
+            again.Close();
+        });
+    }
+
+    [Fact]
+    public Task StartupOptionsShowOnlyTheNamedPanesWithoutSavingAndLinkTheFocus()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            window.ApplyPanoramaOptions(StartupOptions.Parse(["--panorama=graph,areas", "--panorama-focus=turn:1"]));
+            window.SwitchTab(MainWindow.PanoramaTab);
+            Settle(window);
+            Assert.True(window.Panorama.GraphVisible);
+            Assert.True(window.Panorama.AreasVisible);
+            Assert.False(window.Panorama.KnowledgeVisible);
+            Assert.False(window.Knowledge.IsVisible);
+            Assert.Equal(FocusKind.Turn, window.LinkedFocus.Current!.Kind);
+            Assert.False(File.Exists(PreferenceFile.Value)); // an option is for this run only
             window.Close();
         });
     }

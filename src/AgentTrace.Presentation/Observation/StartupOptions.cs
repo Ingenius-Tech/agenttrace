@@ -12,7 +12,8 @@ namespace AgentTrace.Presentation.Observation;
 /// <c>--graph-select</c>, <c>--graph-collapse</c>, <c>--graph-orientation</c>, <c>--graph-filter</c>, <c>--graph-zoom</c>,
 /// <c>--heatmap-zoom</c> (folder to zoom into), <c>--heatmap-filter</c> (<c>reads,writes,errors</c>), <c>--heatmap-area</c> (<c>size</c> or <c>activity</c>),
 /// <c>--heatmap-select</c> (file or folder to select), <c>--areas-group</c> (<c>layer</c>, <c>module</c> or <c>kind</c>),
-/// <c>--areas-filter</c> (<c>reads,writes,errors</c>), <c>--areas-select</c> (<c>task:&lt;n&gt;</c>, <c>turn:&lt;n&gt;</c> or an area id), <c>--areas-expand</c> (area id), <c>--lang</c> (<c>en</c> or <c>es</c>: language of this run) and, to
+/// <c>--areas-filter</c> (<c>reads,writes,errors</c>), <c>--areas-select</c> (<c>task:&lt;n&gt;</c>, <c>turn:&lt;n&gt;</c> or an area id), <c>--areas-expand</c> (area id), <c>--panorama</c> (the panes the Panorama shows: <c>graph,areas,knowledge</c>), <c>--panorama-focus</c>
+/// (<c>&lt;callId&gt;</c>, <c>turn:&lt;n&gt;</c>, <c>task:&lt;n&gt;</c> or a file: selects it so the Panorama links the panes), <c>--lang</c> (<c>en</c> or <c>es</c>: language of this run) and, to
 /// capture the window in automatic checks, <c>--capture</c>, <c>--capture-delay</c> and <c>--render=software</c>.
 /// What is not understood is recorded in <see cref="Warnings"/> and does not prevent startup.
 /// </summary>
@@ -39,6 +40,8 @@ public sealed record StartupOptions(
     string? AreasFilter,
     string? AreasSelect,
     string? AreasExpand,
+    IReadOnlyList<string>? Panorama,
+    string? PanoramaFocus,
     string? Lang,
     string? Capture,
     int CaptureDelayMillis,
@@ -53,6 +56,8 @@ public sealed record StartupOptions(
     private static readonly HashSet<string> Tabs = ["graph", "diff", "telemetry", "file", "knowledge", "heatmap", "areas", "panorama"];
 
     private static readonly HashSet<string> HeatmapAreas = ["size", "activity"];
+
+    private static readonly HashSet<string> PanoramaPanes = ["graph", "areas", "knowledge"];
 
     private static readonly HashSet<string> AreasGroups = ["layer", "module", "kind"];
 
@@ -113,6 +118,24 @@ public sealed record StartupOptions(
             areasGroup = null;
         }
 
+        List<string> panes = [];
+        if (Text(named, "panorama") is { } panesText)
+        {
+            foreach (string name in panesText.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                string pane = name.ToLowerInvariant();
+                if (!PanoramaPanes.Contains(pane)) warnings.Add(string.Format(CultureInfo.CurrentCulture, ShellStrings.StartupWarningUnknownPanoramaPaneFormat, name));
+                else if (!panes.Contains(pane)) panes.Add(pane);
+            }
+        }
+
+        string? panoramaFocus = Text(named, "panorama-focus");
+        if (panoramaFocus is not null && IsMalformedNumbered(panoramaFocus))
+        {
+            warnings.Add(string.Format(CultureInfo.CurrentCulture, ShellStrings.StartupWarningNotANumberFormat, "panorama-focus", panoramaFocus));
+            panoramaFocus = null;
+        }
+
         string? lang = null;
         if (Text(named, "lang") is { } langText)
         {
@@ -161,6 +184,8 @@ public sealed record StartupOptions(
             Text(named, "areas-filter"),
             Text(named, "areas-select"),
             Text(named, "areas-expand"),
+            panes.Count > 0 ? panes : null,
+            panoramaFocus,
             lang,
             Text(named, "capture"),
             delay,
@@ -168,6 +193,11 @@ public sealed record StartupOptions(
             Text(named, "capture-mode")?.Equals("printwindow", StringComparison.OrdinalIgnoreCase) == true,
             warnings);
     }
+
+    /// <summary><c>turn:</c> and <c>task:</c> must be followed by a whole number.</summary>
+    private static bool IsMalformedNumbered(string spec) =>
+        (spec.StartsWith("turn:", StringComparison.OrdinalIgnoreCase) || spec.StartsWith("task:", StringComparison.OrdinalIgnoreCase))
+        && !int.TryParse(spec[5..].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out _);
 
     private static double? Degrees(Dictionary<string, string> named, string key, List<string> warnings)
     {

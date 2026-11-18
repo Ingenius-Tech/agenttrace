@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using AgentTrace.Desktop.Theme;
+using AgentTrace.Presentation.Observation;
 using AgentTrace.Presentation.Resources;
 
 namespace AgentTrace.Desktop.Controls;
@@ -38,6 +39,9 @@ public sealed class PanoramaPane : UserControl
     /// <summary>Raised when the user shows or hides a pane (the window refreshes the pane that appears).</summary>
     public event Action? VisibilityChanged;
 
+    /// <summary>Raised when the user changes the arrangement: a pane shown or hidden, or a splitter dragged (the window saves it).</summary>
+    public event Action? LayoutChanged;
+
     /// <summary>The user asked to remove the highlights that link the panes.</summary>
     public event Action? ClearFocusRequested;
 
@@ -51,6 +55,8 @@ public sealed class PanoramaPane : UserControl
         _knowledgeToggle = Toggle(ShellStrings.TabKnowledge);
         ToolTip.SetTip(_clearFocus, ShellStrings.PanoramaClearFocusTip);
         _clearFocus.Click += (_, _) => ClearFocusRequested?.Invoke();
+        _columnSplitter.DragCompleted += (_, _) => LayoutChanged?.Invoke();
+        _rowSplitter.DragCompleted += (_, _) => LayoutChanged?.Invoke();
 
         Grid.SetRow(_rowSplitter, 1);
         _right.Children.Add(_rowSplitter);
@@ -106,6 +112,38 @@ public sealed class PanoramaPane : UserControl
     public (GridLength Graph, GridLength Right, GridLength Areas, GridLength Knowledge) Sizes =>
         (_outer.ColumnDefinitions[0].Width, _outer.ColumnDefinitions[2].Width, _right.RowDefinitions[0].Height, _right.RowDefinitions[2].Height);
 
+    /// <summary>The arrangement as it is now: the visible panes and the splitters' ratios (a hidden pane keeps the size it had).</summary>
+    public PanoramaLayout Layout => new PanoramaLayout(GraphVisible, AreasVisible, KnowledgeVisible,
+        Ratio(_outer.ColumnDefinitions[0].Width, _graphWidth, _outer.ColumnDefinitions[2].Width, _rightWidth),
+        Ratio(_right.RowDefinitions[0].Height, _areasHeight, _right.RowDefinitions[2].Height, _knowledgeHeight)).Normalized();
+
+    /// <summary>Shows the layout (panes and ratios) without raising <see cref="LayoutChanged"/>.</summary>
+    public void ApplyLayout(PanoramaLayout layout)
+    {
+        layout = layout.Normalized();
+        _graphToggle.IsChecked = layout.Graph;
+        _areasToggle.IsChecked = layout.Areas;
+        _knowledgeToggle.IsChecked = layout.Knowledge;
+        _graphWidth = Stars(layout.ColumnRatio, first: true);
+        _rightWidth = Stars(layout.ColumnRatio, first: false);
+        _areasHeight = Stars(layout.RowRatio, first: true);
+        _knowledgeHeight = Stars(layout.RowRatio, first: false);
+        _outer.ColumnDefinitions[0].Width = _graphWidth;
+        _outer.ColumnDefinitions[2].Width = _rightWidth;
+        _right.RowDefinitions[0].Height = _areasHeight;
+        _right.RowDefinitions[2].Height = _knowledgeHeight;
+        ApplyVisibility();
+    }
+
+    private static GridLength Stars(double ratio, bool first) => new((first ? ratio : 1 - ratio) * 100, GridUnitType.Star);
+
+    // A definition that is hidden has zero size: its saved size (what the splitter left) is used instead
+    private static double Ratio(GridLength firstNow, GridLength firstSaved, GridLength secondNow, GridLength secondSaved)
+    {
+        double first = (firstNow.Value > 0 ? firstNow : firstSaved).Value, second = (secondNow.Value > 0 ? secondNow : secondSaved).Value;
+        return first + second > 0 ? first / (first + second) : double.NaN;
+    }
+
     /// <summary>Takes the three panes out of their tabs and places them in the layout. Does nothing if already attached.</summary>
     public void Attach()
     {
@@ -152,6 +190,7 @@ public sealed class PanoramaPane : UserControl
             if (!GraphVisible && !AreasVisible && !KnowledgeVisible) button.IsChecked = true; // at least one pane stays
             ApplyVisibility();
             VisibilityChanged?.Invoke();
+            LayoutChanged?.Invoke();
         };
         return button;
     }

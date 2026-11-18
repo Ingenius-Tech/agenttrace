@@ -306,6 +306,10 @@ Si no hay ningún commit, todo el proyecto aparecería como nuevo: puedes crear 
     <value>--heatmap-area desconocida: {0}</value>
     <comment>Startup warning. {0} = the value given.</comment>
   </data>
+  <data name="StartupWarningUnknownPanoramaPaneFormat" xml:space="preserve">
+    <value>Panel de --panorama desconocido: {0}</value>
+    <comment>Startup warning. {0} = the pane name given (graph, areas or knowledge are valid).</comment>
+  </data>
   <data name="StartupWarningUnknownAreasGroupFormat" xml:space="preserve">
     <value>--areas-group desconocido: {0}</value>
     <comment>Startup warning. {0} = the value given.</comment>

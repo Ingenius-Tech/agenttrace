@@ -108,6 +108,35 @@ public sealed class StartupOptionsTest : TempDirTestBase
     }
 
     [Fact]
+    public void ThePanoramaPanesAreAListWithoutDuplicatesOrUnknownNames()
+    {
+        Assert.Null(StartupOptions.Parse([]).Panorama);
+        Assert.Null(StartupOptions.Parse(["--panorama="]).Panorama);
+        Assert.Equal(["graph", "areas"], StartupOptions.Parse(["--panorama=Graph, areas,graph"]).Panorama);
+        StartupOptions bad = StartupOptions.Parse(["--panorama=areas,heatmap"]);
+        Assert.Equal(["areas"], bad.Panorama);
+        Assert.Equal(["Unknown --panorama pane: heatmap"], bad.Warnings);
+        StartupOptions none = StartupOptions.Parse(["--panorama=floor"]);
+        Assert.Null(none.Panorama);
+        Assert.Single(none.Warnings);
+    }
+
+    [Fact]
+    public void ThePanoramaFocusIsKeptAsGivenAndANumberedOneMustBeANumber()
+    {
+        Assert.Null(StartupOptions.Parse([]).PanoramaFocus);
+        foreach (string spec in new[] { "turn:3", "task:2", "last-error", "toolu_01", "src/a.cs" })
+        {
+            StartupOptions ok = StartupOptions.Parse(["--panorama-focus=" + spec]);
+            Assert.Equal(spec, ok.PanoramaFocus);
+            Assert.Empty(ok.Warnings);
+        }
+        StartupOptions bad = StartupOptions.Parse(["--panorama-focus=turn:abc"]);
+        Assert.Null(bad.PanoramaFocus);
+        Assert.Equal(["--panorama-focus is not a number: turn:abc"], bad.Warnings);
+    }
+
+    [Fact]
     public void TheAreasTabAndItsOptionsAreKnown()
     {
         Assert.Equal("areas", StartupOptions.Parse(["--tab=Areas"]).Tab);

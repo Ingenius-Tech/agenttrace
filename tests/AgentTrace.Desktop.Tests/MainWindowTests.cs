@@ -99,7 +99,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
 
@@ -210,7 +210,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
             window.SwitchTab(MainWindow.AreasTab);
@@ -274,7 +274,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(root);
             Pump("the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "api"));
@@ -319,7 +319,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(root);
             Pump("the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "api"));
@@ -358,7 +358,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
             Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0);
@@ -393,7 +393,7 @@ public sealed class MainWindowTests : TempDirTestBase
     [Fact]
     public Task TheWindowOpensWithTheDarkThemeTheTitleAndEightTabs() => HeadlessHost.Run(() =>
     {
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         Assert.Equal(MainWindow.AppTitle, window.Title);
         Assert.Equal(8, window.Tabs.ItemCount);
@@ -404,7 +404,7 @@ public sealed class MainWindowTests : TempDirTestBase
     [Fact]
     public Task TheTabHeadersAndTheTopBarComeFromTheResources() => HeadlessHost.Run(() =>
     {
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
         Assert.Equal(
@@ -420,7 +420,7 @@ public sealed class MainWindowTests : TempDirTestBase
     public Task TheWindowTextsAreSpanishWhenTheUiThreadRunsInSpanish() => HeadlessHost.Run(() =>
     {
         using var _ = CultureScope.Spanish();
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
         Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor", "Mapa de áreas", "Vista global"], headers); // lang-ok

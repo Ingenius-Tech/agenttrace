@@ -72,7 +72,7 @@ public sealed class PanoramaLinkTests : TempDirTestBase
             knowledge.Accept(e);
         }
         FlowGraph graph = flow.Snapshot();
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("history.txt"))) { Width = width, Height = 850 };
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("history.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = width, Height = 850 };
         window.Show();
         window.Graph.SetGraph(graph);
         window.Knowledge.SetProjectRoot(Root);

@@ -47,6 +47,7 @@ public sealed partial class MainWindow : Window
     private readonly IReadOnlyList<IAgentAdapter> _adapters;
     private readonly RecentProjects _recent;
     private readonly LanguagePreference _language;
+    private readonly PanoramaPreference _panoramaPreference;
     private readonly MenuFlyout _languageMenu = new();
     private readonly Func<FilePath?, string?> _relaunch;
     private readonly TabControl _tabs = new();
@@ -86,15 +87,17 @@ public sealed partial class MainWindow : Window
     /// <summary>
     /// With the given adapters and history (tests use fake agents and a temporary history).
     /// <paramref name="language"/> and <paramref name="relaunch"/> (by default the standard file and <see cref="AppRelauncher"/>)
-    /// let tests exercise the language change without touching the user's profile or starting processes.
+    /// let tests exercise the language change without touching the user's profile or starting processes; <paramref name="panorama"/>
+    /// (by default the standard file) is where the Panorama layout is remembered.
     /// </summary>
     public MainWindow(IReadOnlyList<IAgentAdapter> adapters, RecentProjects recent, LanguagePreference? language = null,
-        Func<FilePath?, string?>? relaunch = null)
+        Func<FilePath?, string?>? relaunch = null, PanoramaPreference? panorama = null)
     {
         _adapters = adapters;
         _recent = recent;
         _language = language ?? LanguagePreference.Standard();
         _relaunch = relaunch ?? AppRelauncher.Relaunch;
+        _panoramaPreference = panorama ?? PanoramaPreference.Standard();
         InitializeComponent();
         Icon = LoadIcon();
         _tree = new ProjectTreeView(path => OpenFile(path), ShowInInspector);
@@ -108,6 +111,8 @@ public sealed partial class MainWindow : Window
         _areasSlot = new PaneSlot(_areas);
         _knowledgeSlot = new PaneSlot(_knowledge);
         _panorama = new PanoramaPane(_graphSlot, _areasSlot, _knowledgeSlot);
+        _panorama.ApplyLayout(_panoramaPreference.Load());
+        _panorama.LayoutChanged += () => _panoramaPreference.Save(_panorama.Layout);
         WireDiffPane();
         WirePanorama();
         Content = BuildUi();
@@ -413,6 +418,7 @@ public sealed partial class MainWindow : Window
         if (options.AreasGroup is { } areasGroup) _areas.SetDimension(Enum.Parse<AreaDimension>(areasGroup, ignoreCase: true));
         if (options.AreasFilter is { } areasFilter) _areas.SetFilter(ActivityFilter.Parse(areasFilter));
         if (options.AreasSelect is not null || options.AreasExpand is not null) _areas.SetPending(options.AreasSelect, options.AreasExpand);
+        ApplyPanoramaOptions(options);
         if (options.Tab is { } tab)
         {
             SwitchTab(tab switch { "graph" => GraphTab, "diff" => DiffTab, "telemetry" => TelemetryTab, "file" => FileTab, "knowledge" => KnowledgeTab, "heatmap" => HeatmapTab, "areas" => AreasTab, "panorama" => PanoramaTab, _ => GraphTab });

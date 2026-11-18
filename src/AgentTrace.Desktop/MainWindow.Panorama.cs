@@ -1,3 +1,4 @@
+using AgentTrace.Presentation.Observation;
 using AgentTrace.Presentation.Panorama;
 
 namespace AgentTrace.Desktop;
@@ -36,6 +37,29 @@ public sealed partial class MainWindow
             : null;
 
     private TraceFocus? AreasTaskFocus() => _areas.Canvas.SelectedTask is { } task ? TraceFocus.ForTask(task) : null;
+
+    /// <summary>
+    /// <c>--panorama</c> shows only the named panes for this run (the saved layout is not touched until the user changes it) and
+    /// <c>--panorama-focus</c> selects what the matching pane would select, so the panes link when the Panorama is shown.
+    /// </summary>
+    public void ApplyPanoramaOptions(StartupOptions options)
+    {
+        if (options.Panorama is { } panes)
+        {
+            _panorama.ApplyLayout(_panorama.Layout.WithPanes(panes));
+            if (KnowledgeShown) RefreshKnowledge();
+            if (AreasShown) RefreshAreas();
+        }
+        if (options.PanoramaFocus is not { } spec) return;
+        if (spec.StartsWith("task:", StringComparison.OrdinalIgnoreCase)) _areas.SetPending(spec, options.AreasExpand);
+        else if (spec.StartsWith("turn:", StringComparison.OrdinalIgnoreCase) || spec is "last" or "last-error") SelectInGraph(spec);
+        else
+        {
+            // a call id or a file: whichever exists in the data is selected
+            SelectInGraph(spec);
+            SelectInKnowledge(spec);
+        }
+    }
 
     /// <summary>The Panorama was shown or left: only while shown do selections link; the highlights go away when it is left.</summary>
     private void SetPanoramaShown(bool shown)

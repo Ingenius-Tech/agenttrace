@@ -36,7 +36,7 @@ public sealed class LocalizedTabsTests : TempDirTestBase
         return HeadlessHost.Run(() =>
         {
             using var _ = new CultureScope(culture);
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
 
