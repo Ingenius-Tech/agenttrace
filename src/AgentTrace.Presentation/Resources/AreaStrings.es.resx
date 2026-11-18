@@ -175,7 +175,9 @@
 
 4. Comprueba tu trabajo: cuenta los archivos rastreados (git ls-files, excluyendo las rutas con algún segmento que empiece por punto) que cubre cada área, y asegúrate de que cada dimensión que definas clasifique al menos el 90 % de esos archivos. Ajusta los patrones hasta lograrlo e indica qué archivos quedan sin clasificar.
 
-5. Responde con un resumen breve: las áreas que has definido y la cobertura de cada dimensión. No modifiques ningún otro archivo.</value>
+5. Añade la línea .agenttrace/ al .gitignore de la raíz de este repositorio (crea el archivo si no existe, y no añadas la línea si ya está).
+
+6. Responde con un resumen breve: las áreas que has definido y la cobertura de cada dimensión. No modifiques ningún archivo aparte de .agenttrace/areas.json y .gitignore.</value>
     <comment>Prompt copied to the clipboard for the user's agent. A literal text: it contains JSON braces and is never passed to string.Format.</comment>
   </data>
   <data name="CopyPromptButton" xml:space="preserve">

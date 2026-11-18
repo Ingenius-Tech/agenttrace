@@ -82,10 +82,12 @@ public sealed class AreaErrorTextTest
         Assert.Contains(".agenttrace/areas.json", english, StringComparison.Ordinal);
         Assert.Contains("90 %", english, StringComparison.Ordinal);
         Assert.Contains("git ls-files", english, StringComparison.Ordinal);
+        Assert.Contains(".gitignore", english, StringComparison.Ordinal);
         using var spanishCulture = CultureScope.Spanish();
         string spanish = AreaStrings.SetupPrompt;
         Assert.NotEqual(english, spanish);
         Assert.Contains("{ \"version\": 1, \"areas\": [", spanish, StringComparison.Ordinal);
         Assert.Contains("90 %", spanish, StringComparison.Ordinal);
+        Assert.Contains(".gitignore", spanish, StringComparison.Ordinal);
     }
 }
