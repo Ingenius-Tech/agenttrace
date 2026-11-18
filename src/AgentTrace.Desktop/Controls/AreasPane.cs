@@ -35,9 +35,9 @@ public sealed class AreasPane : UserControl
     private readonly ToggleButton _writes = new() { Content = FileDetailPanel.LabelledContent(Codicon.Diff, MapStrings.HeatWrites), IsChecked = true };
     private readonly ToggleButton _errors = new() { Content = FileDetailPanel.LabelledContent(Codicon.Close, MapStrings.HeatErrors), IsChecked = true };
     private readonly ComboBox _group = new() { ItemsSource = Dimensions.Select(AreaText.Group).ToArray(), SelectedIndex = 1 };
-    private readonly TextBlock _source = new() { VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
-    private readonly TextBlock _coverage = new() { VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
-    private readonly TextBlock _truncated = new() { VerticalAlignment = VerticalAlignment.Center, Text = AreaStrings.CoverageTruncated, Foreground = AppColors.Brush(AppColors.Muted), IsVisible = false };
+    private readonly TextBlock _source = new() { TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
+    private readonly TextBlock _coverage = new() { TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
+    private readonly TextBlock _truncated = new() { TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Text = AreaStrings.CoverageTruncated, Foreground = AppColors.Brush(AppColors.Muted), IsVisible = false };
     private readonly Button _copyPrompt = new() { Content = FileDetailPanel.LabelledContent(Codicon.Files, AreaStrings.CopyPromptButton), IsVisible = false };
     private readonly TextBlock _copied = new() { VerticalAlignment = VerticalAlignment.Center, Text = AreaStrings.CopiedNote, Foreground = AppColors.Brush(AppColors.Muted), IsVisible = false };
     private readonly StackPanel _errorLines = new() { Margin = new Thickness(8, 0, 8, 4), IsVisible = false };
@@ -87,10 +87,11 @@ public sealed class AreasPane : UserControl
         _panel.BorderThickness = new Thickness(1, 0, 0, 0);
         _panel.Child = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = _panelBox };
 
-        var strip = new StackPanel
+        // Wraps onto further lines when the items do not fit, so nothing is clipped at the right edge
+        var strip = new WrapPanel
         {
-            Orientation = Orientation.Horizontal,
-            Spacing = 12,
+            ItemSpacing = 12,
+            LineSpacing = 2,
             Margin = new Thickness(8, 0, 8, 4),
             Children = { _source, _coverage, _truncated, _copyPrompt, _copied },
         };

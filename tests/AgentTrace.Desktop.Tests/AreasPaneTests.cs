@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using AgentTrace.Core;
@@ -333,6 +334,36 @@ public sealed class AreasPaneTests : TempDirTestBase
             Assert.Equal("Coverage: Layer 50% · Module 0% · Kind 0%", pane.CoverageText); // a file replaces the suggested rules entirely
             Assert.Empty(pane.ErrorTexts);
             window.Close();
+        });
+    }
+
+    [Fact]
+    public Task TheStripWrapsInsteadOfBeingClippedWhenItDoesNotFit()
+    {
+        (AreasSnapshot snapshot, _) = ProjectWithRules("{ \"version\": 1, \"areas\": [ { \"id\": \"a\", \"name\": \"A\", \"dimension\": \"layer\", \"include\": [\"{x,y}\"] } ] }", truncated: true);
+        return HeadlessHost.Run(() =>
+        {
+            foreach (string language in new[] { "en", "es" })
+            {
+                using var _ = new CultureScope(language);
+                var pane = new AreasPane(_ => { }, _ => { });
+                var window = new Window { Width = 520, Height = 400, Content = pane };
+                window.Show();
+                pane.SetSnapshot(snapshot);
+                window.UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+                Assert.True(pane.CoverageTruncated);
+                Assert.True(pane.CopyPromptButton.IsVisible);
+
+                var stripItems = pane.GetLogicalDescendants().OfType<TextBlock>()
+                    .Where(t => t.Text is { Length: > 0 } text && (text == pane.SourceText || text == pane.CoverageText || text == AreaStrings.CoverageTruncated))
+                    .Cast<Control>().Append(pane.CopyPromptButton).ToList();
+                Assert.Equal(4, stripItems.Count);
+                foreach (Control item in stripItems)
+                    Assert.True(item.TranslatePoint(new Point(item.Bounds.Width, 0), pane)!.Value.X <= pane.Bounds.Width + 0.5, $"{language}: a strip item is clipped at the right edge");
+                Save(window, "areas-strip-narrow-" + language);
+                window.Close();
+            }
         });
     }
 
