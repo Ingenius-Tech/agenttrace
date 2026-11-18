@@ -61,6 +61,7 @@ public sealed partial class MainWindow
         _recent.Add(project);
         _projectPath.Text = project.FileName.Length == 0 ? project.Value : project.FileName;
         _stats = new SessionStats();
+        _followedSession = null;
         _statusBar.Message = string.Format(CultureInfo.CurrentCulture, ShellStrings.StatusMonitoringFormat, project);
         _statusBar.SetStats(StatusSegments.Of(_stats));
         ResetAnalysis();
@@ -97,6 +98,8 @@ public sealed partial class MainWindow
             window._stats = new SessionStats();
             window._statusBar.SetStats(StatusSegments.Of(window._stats));
             window.ResetAnalysis();
+            window._followedSession = sessionTrace.FileName;
+            window.ScheduleAreasRefresh();
             window._statusBar.Message = string.Format(CultureInfo.CurrentCulture, ShellStrings.StatusSessionFormat, agent, sessionTrace.FileName);
         });
 
@@ -585,6 +588,9 @@ public sealed partial class MainWindow
     private bool _areasBusy;
     private bool _areasDirty = true;
 
+    /// <summary>Trace file name of the followed session (the status bar's), null until one is found.</summary>
+    private string? _followedSession;
+
     /// <summary>The disk must be listed again and the rules files read again (the observer reported changes).</summary>
     private bool _areasDiskDirty = true;
 
@@ -617,6 +623,7 @@ public sealed partial class MainWindow
         _areasDiskDirty = false;
         long mine = _generation;
         FlowGraph flow = _flow.Snapshot();
+        string? session = _followedSession;
         IReadOnlyList<ChangeEntry> changes = _lastChanges;
         FileStatusIndex index = _lastIndex;
         IgnoreRules? rules = _lastRules;
@@ -626,7 +633,7 @@ public sealed partial class MainWindow
         {
             ProjectListing listing = rescan ? ProjectScanner.Scan(project, rules ?? current.IgnoreRules(), index, ProjectScanner.DefaultMaxFiles) : known!;
             AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing, knownRepos) : knownRepos!;
-            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project, listing);
+            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project, listing, session);
             OnUi(mine, () =>
             {
                 _areasBusy = false;

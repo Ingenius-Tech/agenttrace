@@ -15,8 +15,9 @@ public sealed class AreasSnapshot
 {
     public static readonly AreasSnapshot Empty = new(new FlowBuilder().Snapshot(), AreaActivity.Empty, AreaRepoSet.Empty, new FilePath("."));
 
-    public AreasSnapshot(FlowGraph flow, AreaActivity activity, AreaRepoSet repos, FilePath project, AreaCoverage? coverage = null)
+    public AreasSnapshot(FlowGraph flow, AreaActivity activity, AreaRepoSet repos, FilePath project, AreaCoverage? coverage = null, string? session = null)
     {
+        Session = session;
         Coverage = coverage ?? AreaCoverage.Empty;
         Flow = flow;
         Activity = activity;
@@ -28,6 +29,9 @@ public sealed class AreasSnapshot
     }
 
     public FlowGraph Flow { get; }
+
+    /// <summary>Trace file name of the session being followed (the one the status bar shows); null when none was found.</summary>
+    public string? Session { get; }
 
     /// <summary>How much of the listed files the rules classify, per dimension.</summary>
     public AreaCoverage Coverage { get; }
@@ -45,8 +49,8 @@ public sealed class AreasSnapshot
     public ValueList<AreaTaskSummary> Summaries { get; }
 
     /// <summary>Computes the activity per file from the flow and the git changes. Call it off the UI thread: it walks every step.</summary>
-    public static AreasSnapshot Of(FlowGraph flow, IReadOnlyList<ChangeEntry> changes, AreaRepoSet repos, FilePath project, ProjectListing? listing = null) =>
-        new(flow, AreaActivityBuilder.Build(flow, changes, project), repos, project, listing is null ? null : AreaCoverage.Of(repos, listing));
+    public static AreasSnapshot Of(FlowGraph flow, IReadOnlyList<ChangeEntry> changes, AreaRepoSet repos, FilePath project, ProjectListing? listing = null, string? session = null) =>
+        new(flow, AreaActivityBuilder.Build(flow, changes, project), repos, project, listing is null ? null : AreaCoverage.Of(repos, listing), session);
 
     /// <summary>The name of an area (the id if the rules no longer have it).</summary>
     public string NameOf(AreaRef area) =>

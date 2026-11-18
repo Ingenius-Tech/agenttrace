@@ -79,6 +79,36 @@ public sealed class AreaTextTest
     }
 
     [Fact]
+    public void TheEmptyTextNamesTheFollowedSessionWithItsTurnsAndFiles()
+    {
+        FilePath root = new(OperatingSystem.IsWindows() ? @"C:\proj" : "/proj");
+        var builder = new AgentTrace.Core.Flow.FlowBuilder();
+        var header = new EventHeader(new SessionId("s"), "test", null, null, new SourceRef(new FilePath("t"), 1));
+        builder.Accept(new AgentEvent.UserMessage(header, "hello"));
+        var one = new AreasSnapshot(builder.Snapshot(), AreaActivity.Empty, AreaRepoSet.Empty, root, session: "4b9af8e9.jsonl");
+        Assert.Equal("No agent activity to place in areas yet. Followed session: 4b9af8e9.jsonl (1 turn, 0 files touched).", AreaText.EmptyNoActivity(one));
+
+        var activity = new AreaActivity([new AreaTurnActivity(0, [new AreaFileActivity(root.Combine("a.cs"), 1, 0, 0, 0, 0)])]);
+        var some = new AreasSnapshot(new AgentTrace.Core.Flow.FlowBuilder().Snapshot(), activity, AreaRepoSet.Empty, root, session: "s.jsonl");
+        Assert.Equal("No agent activity to place in areas yet. Followed session: s.jsonl (0 turns, 1 file touched).", AreaText.EmptyNoActivity(some));
+
+        var none = new AreasSnapshot(builder.Snapshot(), AreaActivity.Empty, AreaRepoSet.Empty, root);
+        Assert.Equal("No agent session found for this project yet", AreaText.EmptyNoActivity(none));
+    }
+
+    [Fact]
+    public void TheEmptyTextIsSpanishUnderEs()
+    {
+        using var _ = CultureScope.Spanish();
+        FilePath root = new(OperatingSystem.IsWindows() ? @"C:\proj" : "/proj");
+        var flow = new AgentTrace.Core.Flow.FlowBuilder().Snapshot();
+        Assert.Equal("Aún no hay actividad del agente que ubicar en áreas. Sesión seguida: s.jsonl (0 turnos, 0 archivos tocados).", // lang-ok
+            AreaText.EmptyNoActivity(new AreasSnapshot(flow, AreaActivity.Empty, AreaRepoSet.Empty, root, session: "s.jsonl")));
+        Assert.Equal("Aún no se ha encontrado ninguna sesión de agente para este proyecto", // lang-ok
+            AreaText.EmptyNoActivity(new AreasSnapshot(flow, AreaActivity.Empty, AreaRepoSet.Empty, root)));
+    }
+
+    [Fact]
     public void TheCountsOfACellListOnlyTheActiveKinds()
     {
         var a = new FileActivity(3, 0, 1, 0, 0, 2);

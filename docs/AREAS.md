@@ -69,7 +69,8 @@ in red under the toolbar, and the tab falls back to the suggested rules until th
 
 ### Without a rules file
 
-The tab is never empty. Without a valid file it uses:
+The tab is never empty of rules. (When there is no activity to place, it says which session it follows, with its turns and files
+touched, or that no session was found for the project.) Without a valid file it uses:
 
 - **Modules** inferred from build manifests (`*.csproj`, `package.json`, `pom.xml`, `go.mod`, `Cargo.toml`, `pyproject.toml`...):
   each file belongs to the module of its nearest ancestor folder that holds a manifest, or to a module for the repository root.

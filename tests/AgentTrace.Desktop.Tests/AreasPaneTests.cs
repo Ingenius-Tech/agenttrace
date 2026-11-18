@@ -270,6 +270,24 @@ public sealed class AreasPaneTests : TempDirTestBase
     private const string DocsRules = "{ \"version\": 1, \"areas\": [ { \"id\": \"docs\", \"name\": \"Docs\", \"dimension\": \"layer\", \"include\": [\"*.md\"] } ] }";
 
     [Fact]
+    public Task AnEmptyMapNamesTheFollowedSessionOrSaysThereIsNone() => HeadlessHost.Run(() =>
+    {
+        FlowGraph flow = new FlowBuilder().Snapshot();
+        (AreasPane pane, Window window, _, _) = Open(AreasSnapshot.Of(flow, [], AreaRepoSet.Empty, Root, session: "4b9af8e9.jsonl"));
+        Assert.Equal("No agent activity to place in areas yet. Followed session: 4b9af8e9.jsonl (0 turns, 0 files touched).", pane.Canvas.EmptyMessage);
+        Save(window, "areas-empty-session");
+
+        pane.SetSnapshot(AreasSnapshot.Of(flow, [], AreaRepoSet.Empty, Root));
+        window.UpdateLayout();
+        Assert.Equal(AreaStrings.EmptyNoSession, pane.Canvas.EmptyMessage);
+        Save(window, "areas-empty-no-session");
+
+        pane.SetSnapshot(AreasSnapshot.Of(Session(), [], RulesFileRepo(), Root, session: "s.jsonl"));
+        Assert.Null(pane.Canvas.EmptyMessage);
+        window.Close();
+    });
+
+    [Fact]
     public Task WithoutARulesFileTheStripSaysSuggestedShowsTheCoverageAndOffersThePromptOnlyOnClick()
     {
         (AreasSnapshot snapshot, _) = ProjectWithRules(null);

@@ -94,6 +94,29 @@
   <data name="EmptyNoActivity" xml:space="preserve">
     <value>No agent activity to place in areas yet</value>
   </data>
+  <data name="EmptyFollowedFormat" xml:space="preserve">
+    <value>No agent activity to place in areas yet. Followed session: {0} ({1}, {2}).</value>
+    <comment>{0}: trace file name of the followed session. {1}: turns count (EmptyTurns_*). {2}: files touched count (EmptyFiles_*).</comment>
+  </data>
+  <data name="EmptyTurns_One" xml:space="preserve">
+    <value>{0} turn</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyTurns_Other" xml:space="preserve">
+    <value>{0} turns</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_One" xml:space="preserve">
+    <value>{0} file touched</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_Other" xml:space="preserve">
+    <value>{0} files touched</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyNoSession" xml:space="preserve">
+    <value>No agent session found for this project yet</value>
+  </data>
   <data name="EmptyFilter" xml:space="preserve">
     <value>Nothing matches the active filters</value>
   </data>

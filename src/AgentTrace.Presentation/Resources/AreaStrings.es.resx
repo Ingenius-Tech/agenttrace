@@ -94,6 +94,29 @@
   <data name="EmptyNoActivity" xml:space="preserve">
     <value>Aún no hay actividad del agente que ubicar en áreas</value>
   </data>
+  <data name="EmptyFollowedFormat" xml:space="preserve">
+    <value>Aún no hay actividad del agente que ubicar en áreas. Sesión seguida: {0} ({1}, {2}).</value>
+    <comment>{0}: trace file name of the followed session. {1}: turns count (EmptyTurns_*). {2}: files touched count (EmptyFiles_*).</comment>
+  </data>
+  <data name="EmptyTurns_One" xml:space="preserve">
+    <value>{0} turno</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyTurns_Other" xml:space="preserve">
+    <value>{0} turnos</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_One" xml:space="preserve">
+    <value>{0} archivo tocado</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_Other" xml:space="preserve">
+    <value>{0} archivos tocados</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyNoSession" xml:space="preserve">
+    <value>Aún no se ha encontrado ninguna sesión de agente para este proyecto</value>
+  </data>
   <data name="EmptyFilter" xml:space="preserve">
     <value>Nada coincide con los filtros activos</value>
   </data>

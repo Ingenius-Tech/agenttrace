@@ -37,6 +37,13 @@ public static class AreaText
         return string.Join(" · ", parts);
     }
 
+    /// <summary>Why the map is empty although the project is open: which session is followed and how much it did, or that there is none.</summary>
+    public static string EmptyNoActivity(AreasSnapshot snapshot) => snapshot.Session is null
+        ? AreaStrings.EmptyNoSession
+        : string.Format(CultureInfo.CurrentCulture, AreaStrings.EmptyFollowedFormat, snapshot.Session,
+            HeatText.Count(snapshot.Flow.Turns.Count, AreaStrings.EmptyTurns_One, AreaStrings.EmptyTurns_Other),
+            HeatText.Count(snapshot.Activity.Turns.SelectMany(t => t.Files).Select(f => f.Path).Distinct().Count(), AreaStrings.EmptyFiles_One, AreaStrings.EmptyFiles_Other));
+
     public static string MoreFiles(int count) => HeatText.Count(count, AreaStrings.MoreFiles_One, AreaStrings.MoreFiles_Other);
 
     /// <summary>Tooltip of a row header: the name and what the agent did there.</summary>

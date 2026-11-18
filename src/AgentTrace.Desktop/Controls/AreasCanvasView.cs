@@ -102,6 +102,12 @@ public sealed class AreasCanvasView : Control
 
     public AreasMatrix Matrix => _matrix;
 
+    /// <summary>What the canvas says in place of the map while there is nothing to draw; null when it draws the map.</summary>
+    public string? EmptyMessage => !_matrix.IsEmpty ? null
+        : _matrix.Snapshot.Project == AreasSnapshot.Empty.Project ? AreaStrings.EmptyNoProject
+        : _matrix.Snapshot.Activity.Turns.Count == 0 ? AreaText.EmptyNoActivity(_matrix.Snapshot)
+        : AreaStrings.EmptyFilter;
+
     /// <summary>The lines on the screen (area rows and, if expanded, their files).</summary>
     public IReadOnlyList<AreaDisplayRow> Lines => _lines;
 
@@ -312,10 +318,7 @@ public sealed class AreasCanvasView : Control
         ctx.FillRectangle(AppColors.Brush(AppColors.Background), new Rect(0, 0, w, h));
         if (_matrix.IsEmpty)
         {
-            string message = _matrix.Snapshot.Project == AreasSnapshot.Empty.Project ? AreaStrings.EmptyNoProject
-                : _matrix.Snapshot.Activity.Turns.Count == 0 ? AreaStrings.EmptyNoActivity
-                : AreaStrings.EmptyFilter;
-            DrawText(ctx, message, 24, 26, 14, AppColors.Muted, 0);
+            DrawText(ctx, EmptyMessage!, 24, 26, 14, AppColors.Muted, 0);
             PaintLegend(ctx, w, h);
             return;
         }
@@ -441,9 +444,6 @@ public sealed class AreasCanvasView : Control
         }
     }
 
-    /// <summary>Draws the badges of a task right-aligned ending at <paramref name="right"/>; returns the width they take.</summary>
-    private double PaintBadges(DrawingContext ctx, AreaTaskSummary summary, double right, double y)
-    {
     /// <summary>Narrowest title, in pixels, that still shows "Task 51" in full.</summary>
     private const double MinTitleWidth = 56;
 
@@ -452,6 +452,9 @@ public sealed class AreasCanvasView : Control
     private static double AreaBadgesWidth(AreaTaskSummary summary) =>
         new[] { AreaBadges.UntestedChange, AreaBadges.CrossModule, AreaBadges.SharedTouched }.Count(badge => summary.Badges.HasFlag(badge)) * BadgeWidth;
 
+    /// <summary>Draws the badges of a task right-aligned ending at <paramref name="right"/>; returns the width they take.</summary>
+    private double PaintBadges(DrawingContext ctx, AreaTaskSummary summary, double right, double y)
+    {
         (AreaBadges Badge, Codicon Icon, Color Color)[] all =
         [
             (AreaBadges.UntestedChange, Codicon.Question, AppColors.Modified),
