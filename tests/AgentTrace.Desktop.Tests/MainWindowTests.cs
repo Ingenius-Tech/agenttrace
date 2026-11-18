@@ -189,6 +189,76 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
+    public Task WritingTheRulesFileInARunningApplicationSwitchesTheAreasMapFromSuggestedToFileRules()
+    {
+        Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
+        GitFixture repo = GitFixture.Init(Dir.Combine("project"));
+        repo.Write("src/Program.cs", "class Program { static void Main() { } }\n");
+        repo.Write("README.md", "# Project\n");
+        repo.CommitAll("base");
+        FilePath trace = new FilePath(AppContext.BaseDirectory).Combine("TestData", "claude", "projects", "D--fake-proj", Session + ".jsonl");
+        var recent = new RecentProjects(Dir.Combine("history.txt"));
+        FilePath rulesFile = repo.Dir.Combine(".agenttrace", "areas.json");
+        Directory.CreateDirectory(rulesFile.Parent!.Value.Value);
+
+        // The 1 s timer refresh does not run in the headless dispatcher: the repaint is requested by coming back to the tab
+        static void Refresh(MainWindow window)
+        {
+            window.SwitchTab(MainWindow.GraphTab);
+            window.SwitchTab(MainWindow.AreasTab);
+        }
+
+        return HeadlessHost.Run(() =>
+        {
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            window.Show();
+            window.OpenProject(repo.Dir);
+            window.SwitchTab(MainWindow.AreasTab);
+
+            // No rules file: suggested rules, coverage over the listed files and the offer to copy the setup prompt
+            Pump("the suggested rules", () =>
+            {
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceSuggested && window.Areas.CoverageText.Length > 0;
+            }, 20_000);
+            Assert.True(window.Areas.CopyPromptButton.IsVisible);
+            Assert.Contains("Kind", window.Areas.CoverageText, StringComparison.Ordinal);
+            Save(window, "main-areas-suggested");
+
+            // The file is written (rewritten with different content until it is seen): the file rules replace the suggested ones
+            int version = 0;
+            void WriteRules() => WriteText(rulesFile.Value,
+                "{ \"version\": 1, \"areas\": [ { \"id\": \"docs\", \"name\": \"Docs\", \"dimension\": \"layer\", \"include\": [\"*.md\"] } ]" + new string(' ', ++version) + "}");
+            WriteRules();
+            Pump("the rules of the file", () =>
+            {
+                WriteRules();
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceFile;
+            }, 20_000);
+            Assert.False(window.Areas.CopyPromptButton.IsVisible);
+            Assert.Contains("Layer 50%", window.Areas.CoverageText, StringComparison.Ordinal);
+            Assert.Empty(window.Areas.ErrorTexts);
+            Save(window, "main-areas-file");
+
+            // An invalid file is reported and the suggested rules come back
+            int broken = 0;
+            void WriteBroken() => WriteText(rulesFile.Value, "{ \"version\": 1, \"areas\": [ " + new string(' ', ++broken));
+            WriteBroken();
+            Pump("the errors of the file", () =>
+            {
+                WriteBroken();
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceInvalid;
+            }, 20_000);
+            Assert.NotEmpty(window.Areas.ErrorTexts);
+            Assert.True(window.Areas.CopyPromptButton.IsVisible);
+            Save(window, "main-areas-invalid");
+            window.Close();
+        });
+    }
+
+    [Fact]
     public Task AFolderWithoutGitHoldingTwoRepositoriesShowsTheChangesOfBothInTheInspector()
     {
         Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");

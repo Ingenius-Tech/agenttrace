@@ -30,6 +30,19 @@ public sealed class AreaRulesReaderTest : TempDirTestBase
     }
 
     [Fact]
+    public void TheSignatureChangesWhenTheFileIsCreatedOrRewrittenAndNotOtherwise()
+    {
+        Assert.False(AreaRulesReader.SignatureOf(Dir).Exists);
+        Write("{ \"version\": 1, \"areas\": [] }");
+        AreaRulesSignature first = AreaRulesReader.SignatureOf(Dir);
+        Assert.True(first.Exists);
+        Assert.Equal(first, AreaRulesReader.SignatureOf(Dir));
+
+        Write("{ \"version\": 1, \"areas\": [ ] }");
+        Assert.NotEqual(first, AreaRulesReader.SignatureOf(Dir));
+    }
+
+    [Fact]
     public void AValidFileIsReadWithItsAreasInOrder()
     {
         Write("""

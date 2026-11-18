@@ -157,4 +157,146 @@
   <data name="LegendNote" xml:space="preserve">
     <value>Doble clic en una fila para ver sus archivos · Ctrl+rueda para el zoom</value>
   </data>
+  <data name="SetupPrompt" xml:space="preserve">
+    <value>Me estás ayudando a configurar AgentTrace Studio, un visor local y sin conexión de lo que hacen los agentes de programación. Clasifica los archivos de este repositorio en "áreas" mediante un archivo de reglas. Crea el archivo .agenttrace/areas.json en la raíz de este repositorio (crea la carpeta si no existe) siguiendo estos pasos.
+
+1. Explora el repositorio: carpetas, manifiestos de compilación, pruebas, documentación, configuración y cómo está organizado el código.
+
+2. Elige las áreas en tres dimensiones:
+   - "layer": la capa arquitectónica de un archivo (por ejemplo data, domain, application, api, ui). Usa solo capas que existan de verdad en este repositorio; si no tiene ninguna, no definas ninguna.
+   - "module": un paquete, servicio, biblioteca o aplicación que se compila o se despliega por separado.
+   - "kind": el tipo de archivo. Usa el id "test" para las pruebas y el id "contract" para los contratos públicos compartidos entre módulos (definiciones de API, esquemas, DTO). Los demás ids de tipo son libres (docs, config, migration, dependencies...).
+
+3. Escribe el archivo exactamente con este formato:
+{ "version": 1, "areas": [ { "id": "data", "name": "Datos", "dimension": "layer", "include": ["src/**/Data/**"], "exclude": [], "shared": false } ] }
+   - "version" debe ser 1. "id" es obligatorio, cumple ^[a-z0-9][a-z0-9_-]*$ y es único en todo el archivo. "name" es la etiqueta que muestra el visor. "dimension" es "layer", "module" o "kind". "include" tiene al menos un patrón; "exclude" es opcional. "shared" es opcional y solo tiene sentido en módulos de los que dependen otros módulos.
+   - Dentro de cada dimensión gana la primera área (en el orden del archivo) cuyo "include" coincide con un archivo y cuyo "exclude" no, así que pon primero las áreas más específicas. Lista las capas en el orden en que quieres verlas (por ejemplo Datos, Dominio, Aplicación, API).
+   - Los patrones son relativos a la raíz del repositorio y usan "/" como separador. Usa solo *, ? y ** (sin llaves, sin clases de caracteres, sin "!": usa "exclude"). Un patrón sin "/" coincide a cualquier profundidad; un patrón de carpeta clasifica todo lo que hay debajo.
+
+4. Comprueba tu trabajo: cuenta los archivos rastreados (git ls-files, excluyendo las rutas con algún segmento que empiece por punto) que cubre cada área, y asegúrate de que cada dimensión que definas clasifique al menos el 90 % de esos archivos. Ajusta los patrones hasta lograrlo e indica qué archivos quedan sin clasificar.
+
+5. Responde con un resumen breve: las áreas que has definido y la cobertura de cada dimensión. No modifiques ningún otro archivo.</value>
+    <comment>Prompt copied to the clipboard for the user's agent. A literal text: it contains JSON braces and is never passed to string.Format.</comment>
+  </data>
+  <data name="CopyPromptButton" xml:space="preserve">
+    <value>Copiar prompt de configuración</value>
+  </data>
+  <data name="CopyPromptTip" xml:space="preserve">
+    <value>Copia al portapapeles un prompt que pide a tu agente de programación que escriba .agenttrace/areas.json para este repositorio</value>
+  </data>
+  <data name="CopiedNote" xml:space="preserve">
+    <value>Copiado al portapapeles</value>
+  </data>
+  <data name="SourceFile" xml:space="preserve">
+    <value>Reglas: .agenttrace/areas.json</value>
+  </data>
+  <data name="SourceSuggested" xml:space="preserve">
+    <value>Reglas: sugeridas (sin .agenttrace/areas.json)</value>
+  </data>
+  <data name="SourceInvalid" xml:space="preserve">
+    <value>Reglas: sugeridas (.agenttrace/areas.json tiene errores)</value>
+  </data>
+  <data name="SourceMixedFormat" xml:space="preserve">
+    <value>Reglas: .agenttrace/areas.json en {0} de {1} repositorios, sugeridas en el resto</value>
+    <comment>{0}: repositories with a valid rules file. {1}: repositories.</comment>
+  </data>
+  <data name="CoverageLineFormat" xml:space="preserve">
+    <value>Cobertura: {0}</value>
+    <comment>{0}: the coverage of each dimension.</comment>
+  </data>
+  <data name="CoverageItemFormat" xml:space="preserve">
+    <value>{0} {1}</value>
+    <comment>{0}: dimension name. {1}: the percentage.</comment>
+  </data>
+  <data name="CoveragePercentFormat" xml:space="preserve">
+    <value>{0} %</value>
+    <comment>{0}: whole number.</comment>
+  </data>
+  <data name="CoverageTip" xml:space="preserve">
+    <value>Proporción de archivos listados (no ignorados por git, sin rutas con punto) que clasifica cada dimensión</value>
+  </data>
+  <data name="CoverageTruncated" xml:space="preserve">
+    <value>Listado parcial: el proyecto tiene más archivos de los listados, así que la cobertura solo los cubre a ellos</value>
+  </data>
+  <data name="ErrorsMore_One" xml:space="preserve">
+    <value>+{0} error más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="ErrorsMore_Other" xml:space="preserve">
+    <value>+{0} errores más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="ErrorAreaFormat" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0}: the area (its id, or its position in the file). {1}: what is wrong.</comment>
+  </data>
+  <data name="ErrorAreaPositionFormat" xml:space="preserve">
+    <value>área {0}</value>
+    <comment>{0}: 1-based position of the area in the file.</comment>
+  </data>
+  <data name="ErrorUnreadable" xml:space="preserve">
+    <value>No se pudo leer el archivo de reglas</value>
+  </data>
+  <data name="ErrorInvalidJsonFormat" xml:space="preserve">
+    <value>JSON no válido en la línea {0}</value>
+    <comment>{0}: 1-based line.</comment>
+  </data>
+  <data name="ErrorInvalidJson" xml:space="preserve">
+    <value>JSON no válido</value>
+  </data>
+  <data name="ErrorUnsupportedVersionFormat" xml:space="preserve">
+    <value>Versión {0} no admitida (solo se admite la versión 1)</value>
+    <comment>{0}: the version found.</comment>
+  </data>
+  <data name="ErrorMissingFieldFormat" xml:space="preserve">
+    <value>Falta el campo obligatorio "{0}"</value>
+    <comment>{0}: field name.</comment>
+  </data>
+  <data name="ErrorUnknownDimensionFormat" xml:space="preserve">
+    <value>Dimensión desconocida "{0}" (usa layer, module o kind)</value>
+    <comment>{0}: the value found.</comment>
+  </data>
+  <data name="ErrorInvalidId" xml:space="preserve">
+    <value>Id no válido (minúsculas, dígitos, - y _, empezando por letra o dígito)</value>
+  </data>
+  <data name="ErrorDuplicateId" xml:space="preserve">
+    <value>Id duplicado (los ids son únicos en todo el archivo)</value>
+  </data>
+  <data name="ErrorEmptyInclude" xml:space="preserve">
+    <value>"include" necesita al menos un patrón</value>
+  </data>
+  <data name="ErrorInvalidGlobFormat" xml:space="preserve">
+    <value>Patrón no válido "{0}": {1}</value>
+    <comment>{0}: the pattern. {1}: why it is rejected.</comment>
+  </data>
+  <data name="GlobEmpty" xml:space="preserve">
+    <value>está vacío</value>
+  </data>
+  <data name="GlobEmptySegment" xml:space="preserve">
+    <value>tiene un segmento vacío ("//")</value>
+  </data>
+  <data name="GlobBackslash" xml:space="preserve">
+    <value>usa / como separador, no \</value>
+  </data>
+  <data name="GlobBraces" xml:space="preserve">
+    <value>las llaves no se admiten</value>
+  </data>
+  <data name="GlobCharacterClass" xml:space="preserve">
+    <value>las clases de caracteres [..] no se admiten</value>
+  </data>
+  <data name="GlobNegation" xml:space="preserve">
+    <value>un ! inicial no se admite (usa "exclude")</value>
+  </data>
+  <data name="GlobAbsolute" xml:space="preserve">
+    <value>debe ser relativo a la raíz del repositorio</value>
+  </data>
+  <data name="GlobDotSegment" xml:space="preserve">
+    <value>no se permiten segmentos "." ni ".."</value>
+  </data>
+  <data name="GlobTripleStar" xml:space="preserve">
+    <value>"***" no es válido</value>
+  </data>
+  <data name="GlobMixedDoubleStar" xml:space="preserve">
+    <value>"**" debe ser un segmento completo</value>
+  </data>
 </root>

@@ -13,6 +13,9 @@ public sealed record AreaRulesRead(bool Found, AreaRules? Rules, ValueList<AreaR
     public static readonly AreaRulesRead NotFound = new(false, null, ValueList<AreaRuleError>.Empty);
 }
 
+/// <summary>A cheap fingerprint of a rules file (does it exist, size, last write): equal fingerprints mean the file need not be read again.</summary>
+public readonly record struct AreaRulesSignature(bool Exists, long Length, DateTime LastWriteUtc);
+
 /// <summary>
 /// Reads <c>.agenttrace/areas.json</c> of a repository. It opens that explicit path, so the rule that dot-paths are not tracked
 /// (<see cref="ProjectPaths.IsHidden"/>) does not affect it. Never throws: problems come back as <see cref="AreaRuleError"/>.
@@ -23,6 +26,20 @@ public static class AreaRulesReader
 
     /// <summary>Location of the rules file of the repository at <paramref name="repoRoot"/>.</summary>
     public static FilePath FileOf(FilePath repoRoot) => repoRoot.Combine(".agenttrace", "areas.json");
+
+    /// <summary>The fingerprint of the rules file of the repository at <paramref name="repoRoot"/>; a file that cannot be inspected counts as missing.</summary>
+    public static AreaRulesSignature SignatureOf(FilePath repoRoot)
+    {
+        try
+        {
+            var info = new FileInfo(FileOf(repoRoot).Value);
+            return info.Exists ? new AreaRulesSignature(true, info.Length, info.LastWriteTimeUtc) : default;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return default;
+        }
+    }
 
     public static AreaRulesRead Read(FilePath repoRoot)
     {

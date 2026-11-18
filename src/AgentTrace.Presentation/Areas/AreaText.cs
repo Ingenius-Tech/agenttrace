@@ -64,4 +64,32 @@ public static class AreaText
         if (!s.TestsKnown) texts.Add(AreaStrings.BadgeNotComputed);
         return texts;
     }
+
+    /// <summary>Where the rules come from: the file, the suggested ones, or the suggested ones because the file is invalid (some of each: counted).</summary>
+    public static string Source(AreaRepoSet repos)
+    {
+        int valid = repos.Repos.Count(r => r.Source == AreaSource.File);
+        if (repos.Repos.Count == 0) return "";
+        if (valid == repos.Repos.Count) return AreaStrings.SourceFile;
+        if (valid > 0) return string.Format(CultureInfo.CurrentCulture, AreaStrings.SourceMixedFormat, LocalNumbers.Grouped(valid), LocalNumbers.Grouped(repos.Repos.Count));
+        return repos.Repos.Any(r => r.Source == AreaSource.Invalid) ? AreaStrings.SourceInvalid : AreaStrings.SourceSuggested;
+    }
+
+    /// <summary>"Layer 100% · Module 100% · Kind 62%": the coverage of each dimension.</summary>
+    public static string CoverageItems(AreaCoverage coverage) => string.Join(" · ", coverage.Dimensions.Select(d =>
+        string.Format(CultureInfo.CurrentCulture, AreaStrings.CoverageItemFormat, Group(d.Dimension),
+            string.Format(CultureInfo.CurrentCulture, AreaStrings.CoveragePercentFormat, LocalNumbers.Grouped(d.Percent)))));
+
+    /// <summary>The error lines of every repository whose rules file is invalid, at most <paramref name="max"/>; the rest as a "+N more" line.</summary>
+    public static IReadOnlyList<string> ErrorLines(AreaRepoSet repos, int max)
+    {
+        List<string> all = [];
+        bool several = repos.Repos.Count > 1;
+        foreach (AreaRepo repo in repos.Repos.Where(r => r.Source == AreaSource.Invalid))
+            all.AddRange(repo.Errors.Select(e => several ? string.Format(CultureInfo.CurrentCulture, AreaStrings.ErrorAreaFormat, repo.Name, AreaErrorText.Of(e)) : AreaErrorText.Of(e)));
+        if (all.Count <= max) return all;
+        List<string> shown = all.GetRange(0, max);
+        shown.Add(HeatText.Count(all.Count - max, AreaStrings.ErrorsMore_One, AreaStrings.ErrorsMore_Other));
+        return shown;
+    }
 }

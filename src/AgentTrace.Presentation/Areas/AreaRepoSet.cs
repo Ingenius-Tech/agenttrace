@@ -9,7 +9,7 @@ namespace AgentTrace.Presentation.Areas;
 public enum AreaSource { File, Suggested, Invalid }
 
 /// <summary>The rules that classify one repository. <c>Errors</c> is empty unless <c>Source</c> is <see cref="AreaSource.Invalid"/>.</summary>
-public sealed record AreaRepo(FilePath Root, string Name, AreaRules Rules, AreaClassifier Classifier, AreaSource Source, ValueList<AreaRuleError> Errors)
+public sealed record AreaRepo(FilePath Root, string Name, AreaRules Rules, AreaClassifier Classifier, AreaSource Source, ValueList<AreaRuleError> Errors, AreaRulesSignature Signature = default)
 {
     public AreaRule? Find(string id) => Rules.Areas.FirstOrDefault(a => a.Id == id);
 }
@@ -33,6 +33,9 @@ public sealed class AreaRepoSet
     /// <summary>The repositories, ordered by path.</summary>
     public IReadOnlyList<AreaRepo> Repos { get; }
 
+    /// <summary>True if some repository has no valid rules file (the setup prompt is offered then).</summary>
+    public bool NeedsRules => Repos.Any(r => r.Source != AreaSource.File);
+
     /// <summary>The dimension to show first: layers if some rules file defines them, otherwise modules (the suggested rules have no layers).</summary>
     public AreaDimension DefaultDimension =>
         Repos.Any(r => r.Source == AreaSource.File && r.Rules.Areas.Any(a => a.Dimension == AreaDimension.Layer)) ? AreaDimension.Layer : AreaDimension.Module;
@@ -45,9 +48,10 @@ public sealed class AreaRepoSet
 
     /// <summary>
     /// Reads each repository's rules file; without a valid one, builds the suggested rules from the listed files (<see cref="AreaFallback"/>).
+    /// With <paramref name="previous"/>, a valid rules file whose signature did not change is not read again.
     /// Reads files: call it off the UI thread.
     /// </summary>
-    public static AreaRepoSet Load(IReadOnlyList<FilePath> roots, ProjectListing listing)
+    public static AreaRepoSet Load(IReadOnlyList<FilePath> roots, ProjectListing listing, AreaRepoSet? previous = null)
     {
         List<FilePath> distinct = [.. roots.Distinct()];
         List<FilePath> deepestFirst = [.. distinct.OrderByDescending(r => r.Value.Length)];
@@ -67,12 +71,18 @@ public sealed class AreaRepoSet
         foreach (FilePath root in distinct)
         {
             string name = root.FileName.Length > 0 ? root.FileName : root.Value;
+            AreaRulesSignature signature = AreaRulesReader.SignatureOf(root);
+            if (previous?.Repos.FirstOrDefault(r => r.Root == root) is { Source: AreaSource.File } same && same.Signature == signature && signature.Exists)
+            {
+                repos.Add(same);
+                continue;
+            }
             AreaRulesRead read = AreaRulesReader.Read(root);
-            if (read.Rules is { } rules) repos.Add(new AreaRepo(root, name, rules, new AreaClassifier(root, rules), AreaSource.File, ValueList<AreaRuleError>.Empty));
+            if (read.Rules is { } rules) repos.Add(new AreaRepo(root, name, rules, new AreaClassifier(root, rules), AreaSource.File, ValueList<AreaRuleError>.Empty, signature));
             else
             {
                 AreaRules suggested = AreaFallback.Build(relative[root], name);
-                repos.Add(new AreaRepo(root, name, suggested, new AreaClassifier(root, suggested), read.Found ? AreaSource.Invalid : AreaSource.Suggested, read.Errors));
+                repos.Add(new AreaRepo(root, name, suggested, new AreaClassifier(root, suggested), read.Found ? AreaSource.Invalid : AreaSource.Suggested, read.Errors, signature));
             }
         }
         return new AreaRepoSet(repos);

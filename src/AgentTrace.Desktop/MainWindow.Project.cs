@@ -625,8 +625,8 @@ public sealed partial class MainWindow
         Task.Run(() =>
         {
             ProjectListing listing = rescan ? ProjectScanner.Scan(project, rules ?? current.IgnoreRules(), index, ProjectScanner.DefaultMaxFiles) : known!;
-            AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing) : knownRepos!;
-            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project);
+            AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing, knownRepos) : knownRepos!;
+            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project, listing);
             OnUi(mine, () =>
             {
                 _areasBusy = false;

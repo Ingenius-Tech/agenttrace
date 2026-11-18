@@ -11,6 +11,7 @@ using AgentTrace.Core.Flow;
 using AgentTrace.Desktop.Controls;
 using AgentTrace.Presentation.Areas;
 using AgentTrace.Presentation.Heatmap;
+using AgentTrace.Presentation.Resources;
 using AgentTrace.Presentation.Tree;
 using AgentTrace.Testing;
 using static AgentTrace.Core.AgentEvent;
@@ -244,6 +245,118 @@ public sealed class AreasPaneTests : TempDirTestBase
             Assert.Equal(AreaDimension.Module, pane.Dimension); // no layers: modules first
             Assert.Equal(["shop", "Api", "Core"], RowNames(pane));
             Save(window, "areas-suggested");
+            window.Close();
+        });
+    }
+
+    /// <summary>A project with two listed files, one under a manifest, and the given rules file (none if null), loaded as the application does.</summary>
+    private (AreasSnapshot Snapshot, FilePath Project) ProjectWithRules(string? rulesJson, bool truncated = false)
+    {
+        FilePath project = Dir.Combine("shop");
+        Directory.CreateDirectory(project.Combine("src").Value);
+        File.WriteAllText(project.Combine("src", "Orders.cs").Value, "class O {}");
+        File.WriteAllText(project.Combine("README.md").Value, "# shop");
+        if (rulesJson is not null)
+        {
+            Directory.CreateDirectory(project.Combine(".agenttrace").Value);
+            File.WriteAllText(project.Combine(".agenttrace", "areas.json").Value, rulesJson);
+        }
+        ProjectListing listing = ProjectScanner.Scan(project, IgnoreRulesNone(project), FileStatusIndex.Empty(project), 1000);
+        if (truncated) listing = listing with { Truncated = true };
+        AreaRepoSet repos = AreaRepoSet.Load([project], listing);
+        return (AreasSnapshot.Of(new FlowBuilder().Snapshot(), [], repos, project, listing), project);
+    }
+
+    private const string DocsRules = "{ \"version\": 1, \"areas\": [ { \"id\": \"docs\", \"name\": \"Docs\", \"dimension\": \"layer\", \"include\": [\"*.md\"] } ] }";
+
+    [Fact]
+    public Task WithoutARulesFileTheStripSaysSuggestedShowsTheCoverageAndOffersThePromptOnlyOnClick()
+    {
+        (AreasSnapshot snapshot, _) = ProjectWithRules(null);
+        return HeadlessHost.Run(() =>
+        {
+            List<string> copied = [];
+            var pane = new AreasPane(_ => { }, _ => { }) { CopyText = text => { copied.Add(text); return Task.CompletedTask; } };
+            var window = new Window { Width = 1200, Height = 400, Content = pane };
+            window.Show();
+            pane.SetSnapshot(snapshot);
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(AreaStrings.SourceSuggested, pane.SourceText);
+            Assert.Equal("Coverage: Layer 0% · Module 100% · Kind 50%", pane.CoverageText); // README.md is docs; no layers without rules
+            Assert.False(pane.CoverageTruncated);
+            Assert.Empty(pane.ErrorTexts);
+            Assert.True(pane.CopyPromptButton.IsVisible);
+            Assert.Empty(copied); // nothing is copied before the click
+            Assert.False(pane.CopiedNoteVisible);
+            Save(window, "areas-strip-suggested");
+
+            pane.CopyPromptButton.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal([AreaStrings.SetupPrompt], copied);
+            Assert.True(pane.CopiedNoteVisible);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task AValidRulesFileHidesThePromptAndAnInvalidOneListsItsErrorsWithTheLine()
+    {
+        (AreasSnapshot valid, _) = ProjectWithRules(DocsRules);
+        return HeadlessHost.Run(() =>
+        {
+            var pane = new AreasPane(_ => { }, _ => { });
+            var window = new Window { Width = 1200, Height = 400, Content = pane };
+            window.Show();
+            pane.SetSnapshot(valid);
+            Assert.Equal(AreaStrings.SourceFile, pane.SourceText);
+            Assert.False(pane.CopyPromptButton.IsVisible);
+            Assert.Equal("Coverage: Layer 50% · Module 0% · Kind 0%", pane.CoverageText); // a file replaces the suggested rules entirely
+            Assert.Empty(pane.ErrorTexts);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task AnInvalidRulesFileShowsItsErrorsFallsBackToSuggestedRulesAndKeepsTheOfferToCopy()
+    {
+        (AreasSnapshot invalid, _) = ProjectWithRules("{\n  \"version\": 1,\n  \"areas\": [ { \"id\": \"a\", \"name\": \"A\", \"dimension\": \"layer\", \"include\": [\"{x,y}\"] } ]\n  \"extra\": 1\n}");
+        (AreasSnapshot badGlob, _) = ProjectWithRules("{ \"version\": 1, \"areas\": [ { \"id\": \"a\", \"name\": \"A\", \"dimension\": \"layer\", \"include\": [\"{x,y}\"] } ] }");
+        return HeadlessHost.Run(() =>
+        {
+            var pane = new AreasPane(_ => { }, _ => { });
+            var window = new Window { Width = 1200, Height = 400, Content = pane };
+            window.Show();
+            pane.SetSnapshot(invalid);
+            Assert.Equal(AreaStrings.SourceInvalid, pane.SourceText);
+            Assert.True(pane.CopyPromptButton.IsVisible);
+            Assert.Single(pane.ErrorTexts);
+            Assert.Matches(@"^Invalid JSON at line \d+$", pane.ErrorTexts.Single());
+            Assert.Equal(AreaDimension.Module, pane.Dimension); // the suggested rules have no layers
+
+            pane.SetSnapshot(badGlob);
+            Assert.Equal(["a: Invalid pattern \"{x,y}\": braces are not supported"], pane.ErrorTexts.ToArray());
+            Save(window, "areas-strip-invalid");
+
+            // Back to a valid file: the errors disappear
+            pane.SetSnapshot(ProjectWithRules(DocsRules).Snapshot);
+            Assert.Empty(pane.ErrorTexts);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task ATruncatedListingIsFlaggedNextToTheCoverage()
+    {
+        (AreasSnapshot snapshot, _) = ProjectWithRules(DocsRules, truncated: true);
+        return HeadlessHost.Run(() =>
+        {
+            var pane = new AreasPane(_ => { }, _ => { });
+            var window = new Window { Width = 1200, Height = 400, Content = pane };
+            window.Show();
+            pane.SetSnapshot(snapshot);
+            Assert.True(pane.CoverageTruncated);
             window.Close();
         });
     }

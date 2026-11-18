@@ -1,7 +1,9 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -22,6 +24,8 @@ namespace AgentTrace.Desktop.Controls;
 /// </summary>
 public sealed class AreasPane : UserControl
 {
+    private const int MaxErrorLines = 5;
+
     private static readonly AreaDimension[] Dimensions = [AreaDimension.Layer, AreaDimension.Module, AreaDimension.Kind];
 
     private readonly AreasCanvasView _canvas;
@@ -31,6 +35,12 @@ public sealed class AreasPane : UserControl
     private readonly ToggleButton _writes = new() { Content = FileDetailPanel.LabelledContent(Codicon.Diff, MapStrings.HeatWrites), IsChecked = true };
     private readonly ToggleButton _errors = new() { Content = FileDetailPanel.LabelledContent(Codicon.Close, MapStrings.HeatErrors), IsChecked = true };
     private readonly ComboBox _group = new() { ItemsSource = Dimensions.Select(AreaText.Group).ToArray(), SelectedIndex = 1 };
+    private readonly TextBlock _source = new() { VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
+    private readonly TextBlock _coverage = new() { VerticalAlignment = VerticalAlignment.Center, Foreground = AppColors.Brush(AppColors.Muted) };
+    private readonly TextBlock _truncated = new() { VerticalAlignment = VerticalAlignment.Center, Text = AreaStrings.CoverageTruncated, Foreground = AppColors.Brush(AppColors.Muted), IsVisible = false };
+    private readonly Button _copyPrompt = new() { Content = FileDetailPanel.LabelledContent(Codicon.Files, AreaStrings.CopyPromptButton), IsVisible = false };
+    private readonly TextBlock _copied = new() { VerticalAlignment = VerticalAlignment.Center, Text = AreaStrings.CopiedNote, Foreground = AppColors.Brush(AppColors.Muted), IsVisible = false };
+    private readonly StackPanel _errorLines = new() { Margin = new Thickness(8, 0, 8, 4), IsVisible = false };
     private readonly Border _panel = new() { Width = FileDetailPanel.PanelWidth, IsVisible = false };
     private readonly StackPanel _panelBox = new() { Spacing = 8, Margin = new Thickness(10) };
     private AreasSnapshot _snapshot = AreasSnapshot.Empty;
@@ -48,12 +58,15 @@ public sealed class AreasPane : UserControl
         _openFile = openFile;
         _showDiff = showDiff;
         _canvas = new AreasCanvasView(openFile);
+        CopyText = text => TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard ? clipboard.SetTextAsync(text) : Task.CompletedTask;
 
         ToolTip.SetTip(_reads, MapStrings.HeatReadsTip);
         ToolTip.SetTip(_writes, MapStrings.HeatWritesTip);
         ToolTip.SetTip(_errors, MapStrings.HeatErrorsTip);
         ToolTip.SetTip(_group, AreaStrings.GroupTip);
         foreach (ToggleButton button in new[] { _reads, _writes, _errors }) button.Click += (_, e) => OnFilterClicked((ToggleButton)e.Source!);
+        ToolTip.SetTip(_coverage, AreaStrings.CoverageTip);
+        _copyPrompt.Click += async (_, _) => await CopySetupPrompt();
         _group.SelectionChanged += (_, _) =>
         {
             if (_settingGroup) return;
@@ -74,9 +87,18 @@ public sealed class AreasPane : UserControl
         _panel.BorderThickness = new Thickness(1, 0, 0, 0);
         _panel.Child = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = _panelBox };
 
+        var strip = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            Margin = new Thickness(8, 0, 8, 4),
+            Children = { _source, _coverage, _truncated, _copyPrompt, _copied },
+        };
+        var top = new StackPanel { Children = { bar, strip, _errorLines } };
+
         var content = new DockPanel();
-        DockPanel.SetDock(bar, Dock.Top);
-        content.Children.Add(bar);
+        DockPanel.SetDock(top, Dock.Top);
+        content.Children.Add(top);
         DockPanel.SetDock(_panel, Dock.Right);
         content.Children.Add(_panel);
         content.Children.Add(_canvas);
@@ -86,6 +108,22 @@ public sealed class AreasPane : UserControl
     }
 
     public AreasCanvasView Canvas => _canvas;
+
+    /// <summary>Writes text to the clipboard; replaceable so a test can observe what is copied (the default uses the window's clipboard).</summary>
+    public Func<string, Task> CopyText { get; set; } = null!;
+
+    /// <summary>The "Copy setup prompt" button, visible only while some repository has no valid rules file.</summary>
+    public Button CopyPromptButton => _copyPrompt;
+
+    public string SourceText => _source.Text ?? "";
+
+    public string CoverageText => _coverage.Text ?? "";
+
+    public bool CoverageTruncated => _truncated.IsVisible;
+
+    public bool CopiedNoteVisible => _copied.IsVisible;
+
+    public IEnumerable<string> ErrorTexts => _errorLines.Children.OfType<TextBlock>().Select(t => t.Text ?? "");
 
     public AreaDimension Dimension => _dimension;
 
@@ -102,6 +140,7 @@ public sealed class AreasPane : UserControl
     public void SetSnapshot(AreasSnapshot snapshot)
     {
         _snapshot = snapshot;
+        RefreshStrip();
         if (!_dimensionChosen) SetDimension(snapshot.Repos.DefaultDimension, chosen: false);
         Rebuild();
     }
@@ -137,6 +176,29 @@ public sealed class AreasPane : UserControl
         _pendingSelect = select;
         _pendingExpand = expand;
         ApplyPending();
+    }
+
+    /// <summary>The source of the rules, their coverage, the errors of an invalid file and the button that offers the setup prompt.</summary>
+    private void RefreshStrip()
+    {
+        AreaRepoSet repos = _snapshot.Repos;
+        _source.Text = AreaText.Source(repos);
+        _coverage.IsVisible = _snapshot.Coverage.Dimensions.Count > 0;
+        _coverage.Text = _coverage.IsVisible ? string.Format(CultureInfo.CurrentCulture, AreaStrings.CoverageLineFormat, AreaText.CoverageItems(_snapshot.Coverage)) : "";
+        _truncated.IsVisible = _snapshot.Coverage.Truncated;
+        _copyPrompt.IsVisible = repos.NeedsRules;
+        if (!repos.NeedsRules) _copied.IsVisible = false;
+        _errorLines.Children.Clear();
+        foreach (string line in AreaText.ErrorLines(repos, MaxErrorLines))
+            _errorLines.Children.Add(new TextBlock { Text = line, TextWrapping = TextWrapping.Wrap, Foreground = AppColors.Brush(AppColors.Error) });
+        _errorLines.IsVisible = _errorLines.Children.Count > 0;
+    }
+
+    /// <summary>The only place the clipboard is written: the user's click.</summary>
+    private async Task CopySetupPrompt()
+    {
+        await CopyText(AreaStrings.SetupPrompt);
+        _copied.IsVisible = true;
     }
 
     private void OnFilterClicked(ToggleButton clicked)
