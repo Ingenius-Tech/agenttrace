@@ -34,10 +34,10 @@ public sealed record FlowGraph(ValueList<FlowGraph.Lane> Lanes, ValueList<FlowGr
     /// <c>Duration</c>: total duration according to the agent, or null if unknown. <c>Closed</c>: the agent indicated it
     /// finished; if false, the turn ended without a close or is still in progress. <c>Answer</c>: the text it answered
     /// with, or null. <c>AnswerTokens</c>: usage of the answer message, or null. <c>ExternalChanges</c>: files that
-    /// changed during the turn without any call explaining them.
+    /// changed during the turn without any call explaining them (<c>ExternalPaths</c>: those files, in the order they were seen).
     /// </summary>
     public sealed record Turn(int Index, string? Prompt, DateTimeOffset? Start, DateTimeOffset? End, TimeSpan? Duration, bool Closed,
-        string? Answer, Tokens? AnswerTokens, int ExternalChanges);
+        string? Answer, Tokens? AnswerTokens, int ExternalChanges, ValueList<FilePath> ExternalPaths);
 
     /// <summary>
     /// Batches of calls launched at once in the same lane (the graph column).
@@ -53,9 +53,9 @@ public sealed record FlowGraph(ValueList<FlowGraph.Lane> Lanes, ValueList<FlowGr
         public bool IsEmpty => ThinkingCount == 0 && Texts.Count == 0;
     }
 
-    /// <summary>A tool call with its result.</summary>
+    /// <summary>A tool call with its result. <c>Target</c>: the main file the tool acts on, if the adapter knows it (see <c>ToolCall.Target</c>).</summary>
     public sealed record Step(string CallId, string ToolName, ToolKind Kind, string Summary, string InputJson, StepState State,
-        string? Output, DateTimeOffset? Start, DateTimeOffset? End, ValueList<FileTouch> Files, string? SubagentId)
+        string? Output, DateTimeOffset? Start, DateTimeOffset? End, ValueList<FileTouch> Files, string? SubagentId, FilePath? Target = null)
     {
         /// <summary>How long it took, if the call and the result are known.</summary>
         public TimeSpan? Duration => Start is null || End is null ? null : End.Value - Start.Value;
