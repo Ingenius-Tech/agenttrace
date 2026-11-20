@@ -235,12 +235,13 @@ public sealed partial class MainWindow : Window
 
     private Control BuildToolbar()
     {
-        var flyout = new MenuFlyout();
+        var flyout = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
         ToolTip.SetTip(_terminalButton, ShellStrings.TerminalTooltip);
         _terminalButton.Click += (_, _) => OpenTerminal();
         var open = new SplitButton { Content = ShellStrings.OpenProjectButton, Flyout = flyout };
         open.Click += async (_, _) => await ShowOpenProjectDialogAsync();
         flyout.Opening += (_, _) => FillRecentMenu(flyout);
+        FillRecentMenu(flyout);
         return new Border
         {
             Background = AppColors.Brush(AppColors.Panel),
@@ -316,7 +317,8 @@ public sealed partial class MainWindow : Window
         }
         foreach (FilePath path in recents)
         {
-            var item = new MenuItem { Header = path.Value };
+            var item = new MenuItem { Header = path.FileName.Length == 0 ? path.Value : path.FileName };
+            ToolTip.SetTip(item, path.Value);
             item.Click += (_, _) => OpenProject(path);
             flyout.Items.Add(item);
         }
