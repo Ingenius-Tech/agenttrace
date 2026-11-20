@@ -83,11 +83,14 @@ public sealed class AreaErrorTextTest
         Assert.Contains("90 %", english, StringComparison.Ordinal);
         Assert.Contains("git ls-files", english, StringComparison.Ordinal);
         Assert.Contains(".gitignore", english, StringComparison.Ordinal);
+        Assert.Contains("already there", english, StringComparison.Ordinal);
+        Assert.Contains("not a git repository", english, StringComparison.Ordinal);
         using var spanishCulture = CultureScope.Spanish();
         string spanish = AreaStrings.SetupPrompt;
         Assert.NotEqual(english, spanish);
         Assert.Contains("{ \"version\": 1, \"areas\": [", spanish, StringComparison.Ordinal);
         Assert.Contains("90 %", spanish, StringComparison.Ordinal);
         Assert.Contains(".gitignore", spanish, StringComparison.Ordinal);
+        Assert.Contains("no es un repositorio git", spanish, StringComparison.Ordinal); // lang-ok: Spanish expectation
     }
 }

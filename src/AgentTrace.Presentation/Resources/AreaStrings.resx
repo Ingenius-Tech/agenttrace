@@ -198,9 +198,9 @@
 
 4. Check your work: count the tracked files (git ls-files, excluding paths with a segment that starts with a dot) matched by each area, and make sure each dimension you define classifies at least 90 % of those files. Adjust the patterns until it does, and say which files remain unclassified.
 
-5. Add the line .agenttrace/ to the .gitignore at the root of this repository (create the file if it does not exist, and do not add the line if it is already there).
+5. If this root is a git repository, add the line .agenttrace/ to the .gitignore at its root (create the file if it does not exist, and do not add the line if it is already there). If it is not a git repository, do not create or touch any .gitignore.
 
-6. Reply with a short summary: the areas you defined and the coverage of each dimension. Do not modify any file other than .agenttrace/areas.json and .gitignore.</value>
+6. Reply with a short summary: the areas you defined and the coverage of each dimension. Do not modify any file other than .agenttrace/areas.json and, in a git repository, .gitignore.</value>
     <comment>Prompt copied to the clipboard for the user's agent. A literal text: it contains JSON braces and is never passed to string.Format.</comment>
   </data>
   <data name="CopyPromptButton" xml:space="preserve">

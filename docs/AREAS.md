@@ -81,7 +81,8 @@ touched, or that no session was found for the project.) Without a valid file it 
 The strip above the matrix says "Rules: suggested" and offers **Copy setup prompt**. The button puts a prompt in the clipboard (only
 when you click it) that you paste into your coding agent: it explores the repository, writes `.agenttrace/areas.json` in this
 format, checks that each dimension classifies at least 90 % of the files and adds `.agenttrace/` to the `.gitignore` of the
-repository (these are the only two files it may touch; remove that line if you want to share the rules with your team). When the file is written, a running application
+repository unless the line is already there (these are the only two files it may touch; a root that is not a git repository gets
+no `.gitignore`; remove that line if you want to share the rules with your team). When the file is written, a running application
 picks it up by itself (the file is watched explicitly, although paths that start with a dot are not tracked) and switches the strip
 to "Rules: .agenttrace/areas.json". A valid file replaces the suggested rules entirely.
 
