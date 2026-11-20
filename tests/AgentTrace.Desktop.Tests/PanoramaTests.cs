@@ -37,7 +37,8 @@ public sealed class PanoramaTests : TempDirTestBase
         var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = width, Height = 850 };
         window.Show();
         window.OpenProject(repo.Dir);
-        Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0);
+        // Generous: whichever test runs first in the process pays the cold start of the first window (slow on a shared Linux runner)
+        Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0, 60_000);
         return window;
     }
 
