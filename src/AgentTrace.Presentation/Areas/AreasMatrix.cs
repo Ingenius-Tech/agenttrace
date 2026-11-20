@@ -273,6 +273,8 @@ public sealed class AreasMatrix
         Dictionary<(AreaRowKey Row, int Turn), List<AreaFileCell>> cells = [];
         foreach (AreaTurnActivity turn in snapshot.Activity.Turns)
         {
+            // A turn no task covers (git-only changes of a flow without turns) has no column: it makes no row either
+            if (!snapshot.Tasks.Any(t => turn.Turn >= t.FirstTurn && turn.Turn <= t.LastTurn)) continue;
             foreach (AreaFileActivity file in turn.Files)
             {
                 var activity = new FileActivity(file.Reads, 0, file.Writes, 0, file.External, file.Errors);

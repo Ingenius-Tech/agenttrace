@@ -52,6 +52,18 @@ public sealed class AreasMatrixTest
     private static AreaTurnActivity Turn(int turn, params AreaFileActivity[] files) => new(turn, files.ToValueList());
 
     [Fact]
+    public void ActivityInATurnNoTaskCoversMakesNoRowsAndTheMatrixIsEmpty()
+    {
+        // No turns in the flow: git-only changes land in turn 0 with no task, so there is no column to draw them in
+        var s = new AreasSnapshot(new FlowBuilder().Snapshot(), new AreaActivity(new[] { Turn(0, Act("src/App/a.cs", writes: 1)) }
+            .ToValueList()), new AreaRepoSet([LayeredRepo]), Root);
+        AreasMatrix m = AreasMatrix.Build(s, AreaDimension.Layer, ActivityFilter.All);
+        Assert.Empty(m.Columns);
+        Assert.Empty(m.Rows);
+        Assert.True(m.IsEmpty);
+    }
+
+    [Fact]
     public void RowsFollowTheRulesOrderAndUnclassifiedIsLast()
     {
         AreasSnapshot s = Snapshot(new AreaRepoSet([LayeredRepo]),
