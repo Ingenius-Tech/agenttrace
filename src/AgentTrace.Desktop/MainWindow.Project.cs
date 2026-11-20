@@ -402,7 +402,7 @@ public sealed partial class MainWindow
         _pendingHeatmapSelect = null;
         _areas.Clear();
         _areasRepos = null;
-        _areasBusy = false;
+        _areasPass.Cancel();
         _areasDirty = true;
         _areasDiskDirty = true;
     }
@@ -589,7 +589,7 @@ public sealed partial class MainWindow
     // ---- areas map ----
 
     private bool _areasRefreshPending;
-    private bool _areasBusy;
+    private readonly SinglePass _areasPass = new();
     private bool _areasDirty = true;
 
     /// <summary>Trace file name of the followed session (the status bar's), null until one is found.</summary>
@@ -620,8 +620,7 @@ public sealed partial class MainWindow
     private void RefreshAreas()
     {
         if (!_areasDirty || _observer is not { } current || CurrentProject is not { } project) return;
-        if (_areasBusy) return;
-        _areasBusy = true;
+        if (_areasPass.Busy) return;
         _areasDirty = false;
         bool rescan = _areasDiskDirty || _heatmapListing is null || _areasRepos is null;
         _areasDiskDirty = false;
@@ -633,21 +632,19 @@ public sealed partial class MainWindow
         IgnoreRules? rules = _lastRules;
         ProjectListing? known = _heatmapListing;
         AreaRepoSet? knownRepos = _areasRepos;
-        Task.Run(() =>
+        _areasPass.TryRun(() =>
         {
             ProjectListing listing = rescan ? ProjectScanner.Scan(project, rules ?? current.IgnoreRules(), index, ProjectScanner.DefaultMaxFiles) : known!;
             AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing, knownRepos) : knownRepos!;
-            AreasSnapshot snapshot = AreasSnapshot.Of(flow, changes, repos, project, listing, session);
-            OnUi(mine, () =>
-            {
-                _areasBusy = false;
-                _heatmapListing = listing;
-                _areasRepos = repos;
-                _areas.SetSnapshot(snapshot);
-                ReapplyLinkedFocus();
-                if (_areasDirty) ScheduleAreasRefresh();
-            });
-        });
+            return (listing, repos, snapshot: AreasSnapshot.Of(flow, changes, repos, project, listing, session));
+        }, done =>
+        {
+            _heatmapListing = done.listing;
+            _areasRepos = done.repos;
+            _areas.SetSnapshot(done.snapshot);
+            ReapplyLinkedFocus();
+            if (_areasDirty) ScheduleAreasRefresh();
+        }, action => OnUi(mine, action));
     }
 
     /// <summary>Shows "Knowledge" with that file selected.</summary>
