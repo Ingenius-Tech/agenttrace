@@ -220,6 +220,20 @@ public sealed class AreasPaneTests : TempDirTestBase
     });
 
     [Fact]
+    public Task TheStartupSelectionPrefixesAreCaseInsensitive() => HeadlessHost.Run(() =>
+    {
+        var pane = new AreasPane(_ => { }, _ => { });
+        var window = new Window { Width = 1200, Height = 650, Content = pane };
+        window.Show();
+        pane.SetSnapshot(AreasSnapshot.Of(Session(), [], RulesFileRepo(), Root));
+        pane.SetPending("TASK:1", null);
+        Assert.Equal(1, pane.Canvas.SelectedTask);
+        pane.SetPending("Turn:2", null);
+        Assert.Equal(2, pane.Canvas.SelectedTurn);
+        window.Close();
+    });
+
+    [Fact]
     public Task WithoutARulesFileTheSuggestedModulesFillTheRows()
     {
         FilePath project = Dir.Combine("shop");

@@ -226,18 +226,18 @@ public sealed class AreasPane : UserControl
             _pendingExpand = null;
         }
         if (_pendingSelect is not { } select) return;
-        if (select.StartsWith("task:", StringComparison.Ordinal))
+        if (select.StartsWith("task:", StringComparison.OrdinalIgnoreCase))
         {
-            if (!int.TryParse(select[5..], out int task)) _pendingSelect = null;
+            if (!int.TryParse(select[5..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int task)) _pendingSelect = null;
             else if (task < _snapshot.Tasks.Count)
             {
                 _canvas.SelectTask(task);
                 _pendingSelect = null;
             }
         }
-        else if (select.StartsWith("turn:", StringComparison.Ordinal))
+        else if (select.StartsWith("turn:", StringComparison.OrdinalIgnoreCase))
         {
-            if (!int.TryParse(select[5..], out int turn)) _pendingSelect = null;
+            if (!int.TryParse(select[5..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int turn)) _pendingSelect = null;
             else if (matrix.ColumnOfTurn(turn) >= 0)
             {
                 _canvas.SelectTurn(turn);
