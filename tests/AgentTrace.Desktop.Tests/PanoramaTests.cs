@@ -42,6 +42,13 @@ public sealed class PanoramaTests : TempDirTestBase
         catch (Exception e)
         {
             ThreadPool.GetAvailableThreads(out int free, out _);
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            object? bar = typeof(MainWindow).GetField("_statusBar", flags)?.GetValue(window);
+            object? message = bar?.GetType().GetProperty("Message")?.GetValue(bar);
+            object? followed = typeof(MainWindow).GetField("_followedSession", flags)?.GetValue(window);
+            object? observer = typeof(MainWindow).GetField("_observer", flags)?.GetValue(window);
+            string observerState = observer is null ? "null" : string.Join(";", observer.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).Select(p => { try { return p.Name + "=" + p.GetValue(observer); } catch { return p.Name + "=?"; } }));
+            e = new InvalidOperationException($"status='{message}' followed='{followed}' observer=[{observerState}]", e);
             throw new InvalidOperationException($"DIAG steps={window.Graph.Canvas.Graph.StepCount} traceExists={File.Exists(trace.Value)} repoExists={Directory.Exists(repo.Dir.Value)} poolThreads={ThreadPool.ThreadCount} poolPending={ThreadPool.PendingWorkItemCount} poolFree={free} cpus={Environment.ProcessorCount} culture={System.Globalization.CultureInfo.CurrentCulture.Name}", e);
         }
         return window;
