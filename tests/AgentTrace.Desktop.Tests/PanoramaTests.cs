@@ -168,6 +168,9 @@ public sealed class PanoramaTests : TempDirTestBase
                 File.WriteAllText(second.Value, "second " + (++version) + "\n");
                 return window.Tree.VisibleNodes().Any(n => n.Node.Name == "second.txt");
             }, 20_000);
+            // A repaint timer (1 s) scheduled while Knowledge was still in view must not run once it is hidden: wait past it
+            long hold = Environment.TickCount64 + 1_500;
+            Pump("the repaint timer of the hidden pane to pass", () => Environment.TickCount64 >= hold);
             Assert.Null(window.Knowledge.Canvas.Graph.FindNode(second));
 
             // Knowledge on again: it is brought up to date at once

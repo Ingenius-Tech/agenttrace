@@ -486,7 +486,7 @@ public sealed partial class MainWindow
         DispatcherTimer.RunOnce(() =>
         {
             _knowledgeRefreshPending = false;
-            RefreshKnowledge();
+            if (KnowledgeShown) RefreshKnowledge(); // hidden meanwhile: it stays dirty and the next time it is shown it is brought up to date
         }, TimeSpan.FromMilliseconds(1000));
     }
 
@@ -523,7 +523,7 @@ public sealed partial class MainWindow
         DispatcherTimer.RunOnce(() =>
         {
             _heatmapRefreshPending = false;
-            RefreshHeatmap();
+            if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
         }, TimeSpan.FromMilliseconds(1000));
     }
 
@@ -606,7 +606,7 @@ public sealed partial class MainWindow
         DispatcherTimer.RunOnce(() =>
         {
             _areasRefreshPending = false;
-            RefreshAreas();
+            if (AreasShown) RefreshAreas();
         }, TimeSpan.FromMilliseconds(1000));
     }
 
