@@ -55,9 +55,20 @@ public sealed class MainWindowTests : TempDirTestBase
         {
             Dispatcher.UIThread.RunJobs();
             if (condition()) return;
-            Thread.Sleep(20);
+            YieldToTheDispatcher(20);
         }
         Assert.Fail("Timed out waiting for: " + what);
+    }
+
+    /// <summary>
+    /// Runs the dispatcher loop for a moment. <c>RunJobs</c> alone does not fire <c>DispatcherTimer</c>s on every platform (on Linux the
+    /// first test of the process never saw the 250 ms graph refresh), the loop does.
+    /// </summary>
+    private static void YieldToTheDispatcher(int millis)
+    {
+        var frame = new DispatcherFrame();
+        _ = Task.Delay(millis).ContinueWith(_ => Dispatcher.UIThread.Post(() => frame.Continue = false), TaskScheduler.Default);
+        Dispatcher.UIThread.PushFrame(frame);
     }
 
     /// <summary>
