@@ -40,6 +40,16 @@ public sealed class AutoModulesTest
         Assert.Single(rules.Areas);
     }
 
+    [Theory]
+    [InlineData("we*b")]
+    [InlineData("we?b")]
+    public void AFolderNamedWithWildcardCharactersIsNotAModule(string folder)
+    {
+        AreaRules rules = AutoModules.Build([folder + "/package.json", "web/package.json", "wexb/a.js"], Manifests, "r");
+        Assert.Equal(["web", AutoModules.RootId], rules.Areas.Select(a => a.Id).ToArray());
+        Assert.Equal(AutoModules.RootId, ModuleOf(Classifier(rules), "wexb/a.js"));
+    }
+
     [Fact]
     public void ARootManifestAddsNoModuleOfItsOwn()
     {
