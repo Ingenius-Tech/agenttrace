@@ -72,11 +72,12 @@ public sealed class KnowledgePane : UserControl
         var content = new DockPanel();
         DockPanel.SetDock(bar, Dock.Top);
         content.Children.Add(bar);
-        DockPanel.SetDock(_detail, Dock.Right);
+        DetailDock.Apply(_detail, _detail, double.PositiveInfinity, FileDetailPanel.PanelWidth);
         content.Children.Add(_detail);
         content.Children.Add(_canvas);
         Content = content;
 
+        SizeChanged += (_, e) => DetailDock.Apply(_detail, _detail, e.NewSize.Width, FileDetailPanel.PanelWidth);
         _canvas.Selected += _ => RefreshDetail();
         _canvas.Activated += openFile;
     }

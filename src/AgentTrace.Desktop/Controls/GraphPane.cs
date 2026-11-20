@@ -65,21 +65,25 @@ public sealed class GraphPane : UserControl
             RefreshBar();
         };
 
-        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _follow, _vertical, collapseAll, expandAll, _errorsOnly, _hideReads } };
-        var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { _summary, zoomOut, _zoomLabel, zoomIn } };
-        var bar = new DockPanel { Margin = new Thickness(8, 4) };
-        DockPanel.SetDock(right, Dock.Right);
-        bar.Children.Add(right);
-        bar.Children.Add(left);
+        // Wraps onto further lines when the pane is narrow, so nothing is clipped
+        var bar = new WrapPanel
+        {
+            ItemSpacing = 6,
+            LineSpacing = 4,
+            Margin = new Thickness(8, 4),
+            Children = { _follow, _vertical, collapseAll, expandAll, _errorsOnly, _hideReads, _summary, zoomOut, _zoomLabel, zoomIn },
+        };
+        _summary.Margin = new Thickness(6, 0, 0, 0);
 
         var content = new DockPanel();
         DockPanel.SetDock(bar, Dock.Top);
         content.Children.Add(bar);
-        DockPanel.SetDock(_detailHost, Dock.Right);
+        DetailDock.Apply(_detailHost, _detailPane, double.PositiveInfinity, DetailPane.PaneWidth);
         content.Children.Add(_detailHost);
         content.Children.Add(_canvas);
         Content = content;
 
+        SizeChanged += (_, e) => DetailDock.Apply(_detailHost, _detailPane, e.NewSize.Width, DetailPane.PaneWidth);
         _canvas.ViewChanged += RefreshBar;
         _canvas.Selected += _ => RefreshDetail();
         _canvas.Activated += Activate;

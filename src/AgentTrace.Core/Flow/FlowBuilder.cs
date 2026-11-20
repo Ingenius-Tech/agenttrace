@@ -26,7 +26,7 @@ public sealed class FlowBuilder
     private readonly Dictionary<string, ToolResult> _earlyResults = [];
     private readonly Dictionary<string, List<FileTouch>> _earlyTouches = [];
     private readonly Dictionary<string, string> _earlySubagents = [];
-    private readonly HashSet<FilePath> _leadExternal = [];
+    private readonly OrderedSet<FilePath> _leadExternal = new();
 
     public void Accept(AgentEvent evt)
     {
@@ -265,7 +265,7 @@ public sealed class FlowBuilder
         TimeSpan? duration = t.AgentDuration;
         if (duration == null && t.Closed && t.Start is { } start && t.End is { } end) duration = end - start;
         if (answerTokens != null && answerTokens.Equals(Tokens.Zero)) answerTokens = null;
-        return new Turn(t.Index, t.Prompt, t.Start, t.End, duration, t.Closed, answer, answerTokens, t.ExternalPaths.Count);
+        return new Turn(t.Index, t.Prompt, t.Start, t.End, duration, t.Closed, answer, answerTokens, t.ExternalPaths.Count, t.ExternalPaths.ToValueList());
     }
 
     // --- mutable internal state ---
@@ -303,7 +303,7 @@ public sealed class FlowBuilder
         public readonly string? Prompt = prompt;
         public readonly DateTimeOffset? Start = start;
         public readonly List<MutableStep> Steps = [];
-        public readonly HashSet<FilePath> ExternalPaths = [];
+        public readonly OrderedSet<FilePath> ExternalPaths = new();
         public DateTimeOffset? End = start;
         public TimeSpan? AgentDuration;
         public bool Closed;
@@ -337,6 +337,6 @@ public sealed class FlowBuilder
         public string? SubagentId;
 
         public Step Freeze() => new(Call.CallId, Call.ToolName, Call.Kind, Call.Summary, Call.InputJson, State, Output,
-            Start, End, Files.ToValueList(), SubagentId);
+            Start, End, Files.ToValueList(), SubagentId, Call.Target);
     }
 }

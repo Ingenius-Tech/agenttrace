@@ -59,22 +59,9 @@ public sealed record StepDetail(string Title, ValueList<StepDetail.Field> Fields
                     notes.Add(string.IsNullOrWhiteSpace(batch.Notes.ThinkingText) ? head : head + "\n" + batch.Notes.ThinkingText);
                 }
                 foreach (string t in batch.Notes.Texts) notes.Add(string.Format(CultureInfo.CurrentCulture, GraphStrings.NoteSaidFormat, t));
-                var files = new List<FileTouch>(step.Files);
-                var viaGit = new List<FilePath>();
-                foreach (ChangeEntry entry in changes)
-                {
-                    Attribution a = entry.Attribution;
-                    bool mine = (a.Confidence == Confidence.Exact || a.Confidence == Confidence.Probable)
-                        && a.Calls.Count == 1 && a.Calls[0].CallId == step.CallId;
-                    FilePath path = entry.Change.Path;
-                    if (mine && !files.Any(f => f.Path == path))
-                    {
-                        files.Add(new FileTouch(path, entry.Change.Kind));
-                        viaGit.Add(path);
-                    }
-                }
+                StepFiles stepFiles = StepFiles.Of(step, changes);
                 return new StepDetail(step.ToolName + " · " + (string.IsNullOrWhiteSpace(step.Summary) ? step.CallId : FirstLine(step.Summary)),
-                    fields.ToValueList(), notes.ToValueList(), files.ToValueList(), viaGit.ToValueList(), GraphStrings.InputLabel, step.InputJson, GraphStrings.OutputLabel,
+                    fields.ToValueList(), notes.ToValueList(), stepFiles.Files, stepFiles.ViaGit, GraphStrings.InputLabel, step.InputJson, GraphStrings.OutputLabel,
                     Truncate(step.Output), step.SubagentId);
             }
         }

@@ -298,4 +298,36 @@ public sealed class FlowBuilderTest
         Assert.Equal(["main", "main", "main", "main", "sub1"], g.Batches.Select(b => b.LaneId).ToArray());
         Assert.Equal([0, 1, 2, 3, 0], g.Batches.Select(b => b.Seq).ToArray());
     }
+
+    [Fact]
+    public void ExposesTheExternalPathsOfEachTurnInTheOrderTheyWereSeen()
+    {
+        FlowGraph g = Build(
+        [
+            new FileChanged(H(null, 0), new FilePath("lead.txt"), ChangeKind.Modified, null),
+            new UserMessage(H(null, 1), "p1"),
+            new FileChanged(H(null, 2), new FilePath("z.txt"), ChangeKind.Modified, null),
+            new FileChanged(H(null, 3), new FilePath("a.txt"), ChangeKind.Created, null),
+            new FileChanged(H(null, 4), new FilePath("z.txt"), ChangeKind.Modified, null),
+            new UserMessage(H(null, 5), "p2"),
+            new FileChanged(H(null, 6), new FilePath("b.txt"), ChangeKind.Deleted, null),
+        ]);
+        Assert.Equal([new FilePath("lead.txt"), new FilePath("z.txt"), new FilePath("a.txt")], g.Turns[0].ExternalPaths);
+        Assert.Equal(g.Turns[0].ExternalPaths.Count, g.Turns[0].ExternalChanges);
+        Assert.Equal([new FilePath("b.txt")], g.Turns[1].ExternalPaths);
+    }
+
+    [Fact]
+    public void AStepCarriesTheTargetOfItsCall()
+    {
+        var target = new FilePath("src/a.cs");
+        FlowGraph g = Build(
+        [
+            new UserMessage(H(null, 0), "p"),
+            Call(null, 1, "with", ToolKind.Write) with { Target = target },
+            Call(null, 2, "without", ToolKind.Execute),
+        ]);
+        Assert.Equal(target, StepOf(g, "with").Target);
+        Assert.Null(StepOf(g, "without").Target);
+    }
 }

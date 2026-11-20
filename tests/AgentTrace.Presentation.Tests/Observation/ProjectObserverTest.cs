@@ -242,6 +242,44 @@ public sealed class ProjectObserverTest : TempDirTestBase
     }
 
     [Fact]
+    public void RepositoryRootsListsEveryObservedRepository()
+    {
+        (FilePath root, GitFixture a, GitFixture b) = NewProjectOfTwoRepos();
+        var r = new Recorder();
+        using ProjectObserver o = Observer(root, r);
+        Assert.Equal([root], o.RepositoryRoots()); // before the repositories are known
+        o.Start();
+        Eventually.Until("several repositories", () => r.States.Contains(GitState.MultipleRepositories), 8_000, 20);
+        Eventually.Until("both roots known", () => o.RepositoryRoots().Count == 2, 8_000, 20);
+        Assert.Equal([a.Dir, b.Dir], o.RepositoryRoots().OrderBy(x => x).ToArray());
+    }
+
+    [Fact]
+    public void RepositoryRootsIsTheRepositoryRootWhenTheProjectIsInsideOne()
+    {
+        GitFixture repo = NewRepo();
+        FilePath sub = repo.Dir.Combine("sub");
+        Directory.CreateDirectory(sub.Value);
+        var r = new Recorder();
+        using ProjectObserver o = Observer(sub, r);
+        o.Start();
+        Eventually.Until("repository ready", () => r.States.Contains(GitState.Ready), 8_000, 20);
+        Assert.Equal([repo.Dir], o.RepositoryRoots());
+    }
+
+    [Fact]
+    public void RepositoryRootsIsTheProjectFolderWithoutGit()
+    {
+        FilePath bare = Dir.Combine("no-git");
+        Directory.CreateDirectory(bare.Value);
+        var r = new Recorder();
+        using ProjectObserver o = Observer(bare, r);
+        o.Start();
+        Eventually.Until("no repository", () => r.States.Contains(GitState.NoRepository), 8_000, 20);
+        Assert.Equal([bare], o.RepositoryRoots());
+    }
+
+    [Fact]
     public void SwitchesBetweenSessionBaselineAndHead()
     {
         GitFixture repo = NewRepo();

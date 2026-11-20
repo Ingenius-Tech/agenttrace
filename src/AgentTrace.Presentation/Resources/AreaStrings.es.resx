@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+  Usage guide (keep this comment in both X.resx and X.es.resx).
+    Key names: PascalCase, named by meaning and not by the text (StepStatusRunning, not Running).
+    Values with placeholders end in "Format" (StatusMonitoringFormat = "Monitoring: {0}"); describe each
+    placeholder in the <comment> of the entry. Never concatenate translated fragments: word order differs per language.
+    Plurals: two keys, SummarySteps_One and SummarySteps_Other, picked with Plural.Pick(n, one, other).
+    Adding a key: add the <data> entry to X.resx (English) AND to X.es.resx (Spanish) with the same name and the same
+    placeholders; ResourceParityTest fails otherwise. The strongly typed class X is generated at build time.
+    Adding a language: copy each X.resx to X.<code>.resx, translate the values and add the code to SupportedLanguages.
+    UI text never lives as a literal in code.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="GroupLabel" xml:space="preserve">
+    <value>Agrupar por</value>
+  </data>
+  <data name="GroupTip" xml:space="preserve">
+    <value>Elige la dimensión que muestran las filas</value>
+  </data>
+  <data name="GroupLayer" xml:space="preserve">
+    <value>Capa</value>
+  </data>
+  <data name="GroupModule" xml:space="preserve">
+    <value>Módulo</value>
+  </data>
+  <data name="GroupKind" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="Unclassified" xml:space="preserve">
+    <value>Sin clasificar</value>
+    <comment>Row for the files that match no area of the chosen dimension.</comment>
+  </data>
+  <data name="EmptyNoProject" xml:space="preserve">
+    <value>Abre un proyecto para ver en qué áreas trabaja el agente</value>
+  </data>
+  <data name="EmptyNoActivity" xml:space="preserve">
+    <value>Aún no hay actividad del agente que ubicar en áreas</value>
+  </data>
+  <data name="EmptyFollowedFormat" xml:space="preserve">
+    <value>Aún no hay actividad del agente que ubicar en áreas. Sesión seguida: {0} ({1}, {2}).</value>
+    <comment>{0}: trace file name of the followed session. {1}: turns count (EmptyTurns_*). {2}: files touched count (EmptyFiles_*).</comment>
+  </data>
+  <data name="EmptyTurns_One" xml:space="preserve">
+    <value>{0} turno</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyTurns_Other" xml:space="preserve">
+    <value>{0} turnos</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_One" xml:space="preserve">
+    <value>{0} archivo tocado</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyFiles_Other" xml:space="preserve">
+    <value>{0} archivos tocados</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="EmptyNoSession" xml:space="preserve">
+    <value>Aún no se ha encontrado ninguna sesión de agente para este proyecto</value>
+  </data>
+  <data name="EmptyFilter" xml:space="preserve">
+    <value>Nada coincide con los filtros activos</value>
+  </data>
+  <data name="TaskFormat" xml:space="preserve">
+    <value>Tarea {0}</value>
+    <comment>Header of a group of turns. {0} = number, from 1.</comment>
+  </data>
+  <data name="TaskNoPromptFormat" xml:space="preserve">
+    <value>Tarea {0} (sin prompt)</value>
+    <comment>Header of a task that starts with a continuation turn. {0} = number, from 1.</comment>
+  </data>
+  <data name="TurnFormat" xml:space="preserve">
+    <value>Turno {0}</value>
+    <comment>Tooltip of a turn column. {0} = number, from 1.</comment>
+  </data>
+  <data name="CountLayers_One" xml:space="preserve">
+    <value>{0} capa</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountLayers_Other" xml:space="preserve">
+    <value>{0} capas</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountModules_One" xml:space="preserve">
+    <value>{0} módulo</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="CountModules_Other" xml:space="preserve">
+    <value>{0} módulos</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="SummaryOrderFormat" xml:space="preserve">
+    <value>Primeros cambios: {0}</value>
+    <comment>{0}: the layers in the order the agent first changed them, joined with arrows.</comment>
+  </data>
+  <data name="BadgeUntested" xml:space="preserve">
+    <value>Se cambió código sin tocar pruebas</value>
+  </data>
+  <data name="BadgeCrossModuleFormat" xml:space="preserve">
+    <value>Cambios en {0} módulos</value>
+    <comment>{0}: number of modules changed in the task.</comment>
+  </data>
+  <data name="BadgeShared" xml:space="preserve">
+    <value>Se cambió código compartido o de contrato</value>
+  </data>
+  <data name="BadgeNotComputed" xml:space="preserve">
+    <value>No se comprueban las pruebas: no hay ninguna área de tipo "test"</value>
+  </data>
+  <data name="CellTitleFormat" xml:space="preserve">
+    <value>{0} · turno {1}</value>
+    <comment>Title of a cell. {0} = area name, {1} = turn number, from 1.</comment>
+  </data>
+  <data name="MoreFiles_One" xml:space="preserve">
+    <value>+{0} archivo más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="MoreFiles_Other" xml:space="preserve">
+    <value>+{0} archivos más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="LegendNote" xml:space="preserve">
+    <value>Doble clic en una fila para ver sus archivos · Ctrl+rueda para el zoom</value>
+  </data>
+  <data name="SetupPrompt" xml:space="preserve">
+    <value>Me estás ayudando a configurar AgentTrace Studio, un visor local y sin conexión de lo que hacen los agentes de programación. Clasifica los archivos de este repositorio en "áreas" mediante un archivo de reglas. Crea el archivo .agenttrace/areas.json en la raíz de este repositorio (crea la carpeta si no existe) siguiendo estos pasos.
+
+1. Explora el repositorio: carpetas, manifiestos de compilación, pruebas, documentación, configuración y cómo está organizado el código.
+
+2. Elige las áreas en tres dimensiones:
+   - "layer": la capa arquitectónica de un archivo (por ejemplo data, domain, application, api, ui). Usa solo capas que existan de verdad en este repositorio; si no tiene ninguna, no definas ninguna.
+   - "module": un paquete, servicio, biblioteca o aplicación que se compila o se despliega por separado.
+   - "kind": el tipo de archivo. Usa el id "test" para las pruebas y el id "contract" para los contratos públicos compartidos entre módulos (definiciones de API, esquemas, DTO). Los demás ids de tipo son libres (docs, config, migration, dependencies...).
+
+3. Escribe el archivo exactamente con este formato:
+{ "version": 1, "areas": [ { "id": "data", "name": "Datos", "dimension": "layer", "include": ["src/**/Data/**"], "exclude": [], "shared": false } ] }
+   - "version" debe ser 1. "id" es obligatorio, cumple ^[a-z0-9][a-z0-9_-]*$ y es único en todo el archivo. "name" es la etiqueta que muestra el visor. "dimension" es "layer", "module" o "kind". "include" tiene al menos un patrón; "exclude" es opcional. "shared" es opcional y solo tiene sentido en módulos de los que dependen otros módulos.
+   - Dentro de cada dimensión gana la primera área (en el orden del archivo) cuyo "include" coincide con un archivo y cuyo "exclude" no, así que pon primero las áreas más específicas. Lista las capas en el orden en que quieres verlas (por ejemplo Datos, Dominio, Aplicación, API).
+   - Los patrones son relativos a la raíz del repositorio y usan "/" como separador. Usa solo *, ? y ** (sin llaves, sin clases de caracteres, sin "!": usa "exclude"). Un patrón sin "/" coincide a cualquier profundidad; un patrón de carpeta clasifica todo lo que hay debajo.
+
+4. Comprueba tu trabajo: cuenta los archivos rastreados (git ls-files, excluyendo las rutas con algún segmento que empiece por punto; si esta raíz no es un repositorio git, lista los archivos del disco, omitiendo las rutas con punto y las carpetas de dependencias o compilación como node_modules, bin, obj y target) que cubre cada área, y asegúrate de que cada dimensión que definas clasifique al menos el 90 % de esos archivos. Ajusta los patrones hasta lograrlo e indica qué archivos quedan sin clasificar.
+
+5. Si esta raíz es un repositorio git, añade la línea .agenttrace/ al .gitignore de su raíz (crea el archivo si no existe, y no añadas la línea si ya está). Si no es un repositorio git, no crees ni toques ningún .gitignore.
+
+6. Responde con un resumen breve: las áreas que has definido y la cobertura de cada dimensión. No modifiques ningún archivo aparte de .agenttrace/areas.json y, en un repositorio git, .gitignore.</value>
+    <comment>Prompt copied to the clipboard for the user's agent. A literal text: it contains JSON braces and is never passed to string.Format.</comment>
+  </data>
+  <data name="CopyPromptButton" xml:space="preserve">
+    <value>Copiar prompt de configuración</value>
+  </data>
+  <data name="CopyPromptTip" xml:space="preserve">
+    <value>Copia al portapapeles un prompt que pide a tu agente de programación que escriba .agenttrace/areas.json para este repositorio</value>
+  </data>
+  <data name="CopiedNote" xml:space="preserve">
+    <value>Copiado al portapapeles</value>
+  </data>
+  <data name="SourceFile" xml:space="preserve">
+    <value>Reglas: .agenttrace/areas.json</value>
+  </data>
+  <data name="SourceSuggested" xml:space="preserve">
+    <value>Reglas: sugeridas (sin .agenttrace/areas.json)</value>
+  </data>
+  <data name="SourceInvalid" xml:space="preserve">
+    <value>Reglas: sugeridas (.agenttrace/areas.json tiene errores)</value>
+  </data>
+  <data name="SourceMixedFormat" xml:space="preserve">
+    <value>Reglas: .agenttrace/areas.json en {0} de {1} repositorios, sugeridas en el resto</value>
+    <comment>{0}: repositories with a valid rules file. {1}: repositories.</comment>
+  </data>
+  <data name="CoverageLineFormat" xml:space="preserve">
+    <value>Cobertura: {0}</value>
+    <comment>{0}: the coverage of each dimension.</comment>
+  </data>
+  <data name="CoverageItemFormat" xml:space="preserve">
+    <value>{0} {1}</value>
+    <comment>{0}: dimension name. {1}: the percentage.</comment>
+  </data>
+  <data name="CoveragePercentFormat" xml:space="preserve">
+    <value>{0} %</value>
+    <comment>{0}: whole number.</comment>
+  </data>
+  <data name="CoverageTip" xml:space="preserve">
+    <value>Proporción de archivos listados (no ignorados por git, sin rutas con punto) que clasifica cada dimensión</value>
+  </data>
+  <data name="CoverageTruncated" xml:space="preserve">
+    <value>Listado parcial: el proyecto tiene más archivos de los listados, así que la cobertura solo los cubre a ellos</value>
+  </data>
+  <data name="ErrorsMore_One" xml:space="preserve">
+    <value>+{0} error más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="ErrorsMore_Other" xml:space="preserve">
+    <value>+{0} errores más</value>
+    <comment>{0}: count.</comment>
+  </data>
+  <data name="ErrorAreaFormat" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0}: the area (its id, or its position in the file). {1}: what is wrong.</comment>
+  </data>
+  <data name="ErrorAreaPositionFormat" xml:space="preserve">
+    <value>área {0}</value>
+    <comment>{0}: 1-based position of the area in the file.</comment>
+  </data>
+  <data name="ErrorUnreadable" xml:space="preserve">
+    <value>No se pudo leer el archivo de reglas</value>
+  </data>
+  <data name="ErrorInvalidJsonFormat" xml:space="preserve">
+    <value>JSON no válido en la línea {0}</value>
+    <comment>{0}: 1-based line.</comment>
+  </data>
+  <data name="ErrorInvalidJson" xml:space="preserve">
+    <value>JSON no válido</value>
+  </data>
+  <data name="ErrorUnsupportedVersionFormat" xml:space="preserve">
+    <value>Versión {0} no admitida (solo se admite la versión 1)</value>
+    <comment>{0}: the version found.</comment>
+  </data>
+  <data name="ErrorMissingFieldFormat" xml:space="preserve">
+    <value>Falta el campo obligatorio "{0}"</value>
+    <comment>{0}: field name.</comment>
+  </data>
+  <data name="ErrorUnknownDimensionFormat" xml:space="preserve">
+    <value>Dimensión desconocida "{0}" (usa layer, module o kind)</value>
+    <comment>{0}: the value found.</comment>
+  </data>
+  <data name="ErrorInvalidId" xml:space="preserve">
+    <value>Id no válido (minúsculas, dígitos, - y _, empezando por letra o dígito)</value>
+  </data>
+  <data name="ErrorDuplicateId" xml:space="preserve">
+    <value>Id duplicado (los ids son únicos en todo el archivo)</value>
+  </data>
+  <data name="ErrorEmptyInclude" xml:space="preserve">
+    <value>"include" necesita al menos un patrón</value>
+  </data>
+  <data name="ErrorInvalidGlobFormat" xml:space="preserve">
+    <value>Patrón no válido "{0}": {1}</value>
+    <comment>{0}: the pattern. {1}: why it is rejected.</comment>
+  </data>
+  <data name="GlobEmpty" xml:space="preserve">
+    <value>está vacío</value>
+  </data>
+  <data name="GlobEmptySegment" xml:space="preserve">
+    <value>tiene un segmento vacío ("//")</value>
+  </data>
+  <data name="GlobBackslash" xml:space="preserve">
+    <value>usa / como separador, no \</value>
+  </data>
+  <data name="GlobBraces" xml:space="preserve">
+    <value>las llaves no se admiten</value>
+  </data>
+  <data name="GlobCharacterClass" xml:space="preserve">
+    <value>las clases de caracteres [..] no se admiten</value>
+  </data>
+  <data name="GlobNegation" xml:space="preserve">
+    <value>un ! inicial no se admite (usa "exclude")</value>
+  </data>
+  <data name="GlobAbsolute" xml:space="preserve">
+    <value>debe ser relativo a la raíz del repositorio</value>
+  </data>
+  <data name="GlobDotSegment" xml:space="preserve">
+    <value>no se permiten segmentos "." ni ".."</value>
+  </data>
+  <data name="GlobTripleStar" xml:space="preserve">
+    <value>"***" no es válido</value>
+  </data>
+  <data name="GlobMixedDoubleStar" xml:space="preserve">
+    <value>"**" debe ser un segmento completo</value>
+  </data>
+</root>

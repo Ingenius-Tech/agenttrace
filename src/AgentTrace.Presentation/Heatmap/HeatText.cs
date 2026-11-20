@@ -66,5 +66,5 @@ public static class HeatText
     private static string FilesTouched(int files, int touched) => string.Format(CultureInfo.CurrentCulture, MapStrings.HeatFilesTouchedFormat,
         Count(files, MapStrings.CountFiles_One, MapStrings.CountFiles_Other), Count(touched, MapStrings.CountTouched_One, MapStrings.CountTouched_Other));
 
-    private static string Count(int n, string one, string other) => string.Format(CultureInfo.CurrentCulture, Plural.Pick(n, one, other), LocalNumbers.Grouped(n));
+    internal static string Count(int n, string one, string other) => string.Format(CultureInfo.CurrentCulture, Plural.Pick(n, one, other), LocalNumbers.Grouped(n));
 }

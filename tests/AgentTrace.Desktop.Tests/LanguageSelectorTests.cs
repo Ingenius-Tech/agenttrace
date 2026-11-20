@@ -21,7 +21,8 @@ public sealed class LanguageSelectorTests : TempDirTestBase
             {
                 relaunches.Add(project);
                 return relaunchFailure;
-            });
+            },
+            new PanoramaPreference(Dir.Combine("prefs", "panorama.txt")));
 
     private static Window OpenDialog(MainWindow window) => Assert.Single(window.OwnedWindows);
 

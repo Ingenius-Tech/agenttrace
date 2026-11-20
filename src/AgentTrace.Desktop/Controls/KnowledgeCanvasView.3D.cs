@@ -122,7 +122,7 @@ public sealed partial class KnowledgeCanvasView
         bool matches = _query.Length == 0 || n.Path.FileName.ToLowerInvariant().Contains(_query, StringComparison.Ordinal);
         bool inFocus = _selected is null || neighbours.Contains(n.Path);
         double fog = 1 - 0.55 * it.Fog;
-        using (ctx.PushOpacity((matches && inFocus ? 1 : matches ? 0.4 : Dim) * fog))
+        using (ctx.PushOpacity(NodeOpacity(n.Path, matches, inFocus) * fog))
         {
             var center = new Point(it.X, it.Y);
             Pen outline = n.OnlyExternal

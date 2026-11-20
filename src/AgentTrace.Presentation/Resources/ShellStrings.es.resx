@@ -133,6 +133,26 @@
     <value>Mapa de calor</value>
     <comment>Tab header.</comment>
   </data>
+  <data name="TabAreas" xml:space="preserve">
+    <value>Mapa de áreas</value>
+    <comment>Tab header.</comment>
+  </data>
+  <data name="TabPanorama" xml:space="preserve">
+    <value>Vista global</value>
+    <comment>Tab header: the graph, the Areas map and Knowledge side by side.</comment>
+  </data>
+  <data name="PanoramaToggleTipFormat" xml:space="preserve">
+    <value>Mostrar u ocultar {0}</value>
+    <comment>Tooltip of a pane toggle in the Panorama. {0} = the pane name.</comment>
+  </data>
+  <data name="PanoramaClearFocus" xml:space="preserve">
+    <value>Quitar vínculo</value>
+    <comment>Button of the Panorama bar, shown while the panes highlight what is related to a selection.</comment>
+  </data>
+  <data name="PanoramaClearFocusTip" xml:space="preserve">
+    <value>Quitar los resaltados que vinculan los tres paneles (las selecciones se quedan donde están)</value>
+    <comment>Tooltip of the "clear link" button of the Panorama.</comment>
+  </data>
   <data name="TerminalButton" xml:space="preserve">
     <value>Terminal</value>
     <comment>Top bar button that opens a system terminal.</comment>
@@ -284,6 +304,14 @@ Si no hay ningún commit, todo el proyecto aparecería como nuevo: puedes crear 
   </data>
   <data name="StartupWarningUnknownHeatmapAreaFormat" xml:space="preserve">
     <value>--heatmap-area desconocida: {0}</value>
+    <comment>Startup warning. {0} = the value given.</comment>
+  </data>
+  <data name="StartupWarningUnknownPanoramaPaneFormat" xml:space="preserve">
+    <value>Panel de --panorama desconocido: {0}</value>
+    <comment>Startup warning. {0} = the pane name given (graph, areas or knowledge are valid).</comment>
+  </data>
+  <data name="StartupWarningUnknownAreasGroupFormat" xml:space="preserve">
+    <value>--areas-group desconocido: {0}</value>
     <comment>Startup warning. {0} = the value given.</comment>
   </data>
   <data name="StartupWarningUnknownRenderFormat" xml:space="preserve">

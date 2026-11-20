@@ -137,7 +137,7 @@ public sealed class KnowledgeBuilder
         return turns;
     }
 
-    private bool NotFollowed(FilePath path) => _projectRoot is { } root && (!path.IsUnder(root) || ProjectPaths.IsHidden(root, path));
+    private bool NotFollowed(FilePath path) => _projectRoot is { } root && !ProjectPaths.IsFollowed(root, path);
 
     /// <summary>An error is attributed to the file of its call; without a file (or outside the project) it is counted apart. A result of an unseen call is ignored.</summary>
     private void OnError(ToolResult r)

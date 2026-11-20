@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "areas": [
+    { "id": "domain", "name": "Domain", "dimension": "layer",
+      "include": ["src/AgentTrace.Core/**", "tests/AgentTrace.Core.Tests/**"] },
+    { "id": "infrastructure", "name": "Infrastructure", "dimension": "layer",
+      "include": [
+        "src/AgentTrace.Ingest/**", "src/AgentTrace.Git/**", "src/AgentTrace.Diff/**", "src/AgentTrace.Adapters.*/**",
+        "tests/AgentTrace.Ingest.Tests/**", "tests/AgentTrace.Git.Tests/**", "tests/AgentTrace.Diff.Tests/**",
+        "tests/AgentTrace.Adapters.*.Tests/**"
+      ] },
+    { "id": "presentation", "name": "Presentation", "dimension": "layer",
+      "include": ["src/AgentTrace.Presentation/**", "tests/AgentTrace.Presentation.Tests/**"] },
+    { "id": "ui", "name": "UI", "dimension": "layer",
+      "include": ["src/AgentTrace.Desktop/**", "tests/AgentTrace.Desktop.Tests/**"] },
+
+    { "id": "core", "name": "Core", "dimension": "module",
+      "include": ["src/AgentTrace.Core/**", "tests/AgentTrace.Core.Tests/**"], "shared": true },
+    { "id": "ingest", "name": "Ingest", "dimension": "module",
+      "include": ["src/AgentTrace.Ingest/**", "tests/AgentTrace.Ingest.Tests/**"] },
+    { "id": "git", "name": "Git", "dimension": "module",
+      "include": ["src/AgentTrace.Git/**", "tests/AgentTrace.Git.Tests/**"] },
+    { "id": "diff", "name": "Diff", "dimension": "module",
+      "include": ["src/AgentTrace.Diff/**", "tests/AgentTrace.Diff.Tests/**"] },
+    { "id": "adapter-claude-code", "name": "Claude Code adapter", "dimension": "module",
+      "include": ["src/AgentTrace.Adapters.ClaudeCode/**", "tests/AgentTrace.Adapters.ClaudeCode.Tests/**"] },
+    { "id": "presentation-lib", "name": "Presentation", "dimension": "module",
+      "include": ["src/AgentTrace.Presentation/**", "tests/AgentTrace.Presentation.Tests/**"] },
+    { "id": "desktop", "name": "Desktop app", "dimension": "module",
+      "include": ["src/AgentTrace.Desktop/**", "tests/AgentTrace.Desktop.Tests/**"] },
+    { "id": "testing", "name": "Test support", "dimension": "module",
+      "include": ["tests/AgentTrace.Testing/**", "tests/*.cs", "tests/Directory.Build.props"] },
+
+    { "id": "test", "name": "Tests", "dimension": "kind", "include": ["tests/**"] },
+    { "id": "config", "name": "Build config", "dimension": "kind",
+      "include": ["*.csproj", "*.props", "*.slnx", "global.json", "app.manifest"] },
+    { "id": "docs", "name": "Docs", "dimension": "kind",
+      "include": ["*.md", "docs/**", "LICENSE", "NOTICE"] },
+    { "id": "localization", "name": "Localization", "dimension": "kind", "include": ["**/Resources/*.resx"] },
+    { "id": "source", "name": "Source", "dimension": "kind", "include": ["src/**"] }
+  ]
+}

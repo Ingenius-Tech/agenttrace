@@ -1,0 +1,21 @@
+{
+  "manifests": [
+    "*.csproj",
+    "*.fsproj",
+    "*.vbproj",
+    "package.json",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "go.mod",
+    "Cargo.toml",
+    "pyproject.toml",
+    "setup.py",
+    "Gemfile",
+    "composer.json",
+    "mix.exs",
+    "pubspec.yaml",
+    "CMakeLists.txt",
+    "Package.swift"
+  ]
+}
