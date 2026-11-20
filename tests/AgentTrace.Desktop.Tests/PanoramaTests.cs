@@ -38,7 +38,12 @@ public sealed class PanoramaTests : TempDirTestBase
         window.Show();
         window.OpenProject(repo.Dir);
         // Generous: whichever test runs first in the process pays the cold start of the first window (slow on a shared Linux runner)
-        Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0, 60_000);
+        try { Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0, 20_000); }
+        catch (Exception e)
+        {
+            ThreadPool.GetAvailableThreads(out int free, out _);
+            throw new InvalidOperationException($"DIAG steps={window.Graph.Canvas.Graph.StepCount} traceExists={File.Exists(trace.Value)} repoExists={Directory.Exists(repo.Dir.Value)} poolThreads={ThreadPool.ThreadCount} poolPending={ThreadPool.PendingWorkItemCount} poolFree={free} cpus={Environment.ProcessorCount} culture={System.Globalization.CultureInfo.CurrentCulture.Name}", e);
+        }
         return window;
     }
 
