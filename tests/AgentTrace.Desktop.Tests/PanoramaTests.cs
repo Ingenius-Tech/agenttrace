@@ -48,13 +48,7 @@ public sealed class PanoramaTests : TempDirTestBase
             object? followed = typeof(MainWindow).GetField("_followedSession", flags)?.GetValue(window);
             object? observer = typeof(MainWindow).GetField("_observer", flags)?.GetValue(window);
             string observerState = observer is null ? "null" : string.Join(";", observer.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).Select(p => { try { return p.Name + "=" + p.GetValue(observer); } catch { return p.Name + "=?"; } }));
-            object? flow = typeof(MainWindow).GetField("_flow", flags)?.GetValue(window);
-            object? snap = flow?.GetType().GetMethod("Snapshot")?.Invoke(flow, null);
-            object? stepsInFlow = snap?.GetType().GetProperty("StepCount")?.GetValue(snap);
-            object? pending = typeof(MainWindow).GetField("_graphRefreshPending", flags)?.GetValue(window);
-            object? stats = typeof(MainWindow).GetField("_stats", flags)?.GetValue(window);
-            string statsText = stats is null ? "null" : string.Join(";", stats.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).Where(p => p.GetIndexParameters().Length == 0).Select(p => { try { return p.Name + "=" + p.GetValue(stats); } catch { return p.Name + "=?"; } }));
-            e = new InvalidOperationException($"flowSteps={stepsInFlow} graphRefreshPending={pending} stats=[{statsText}] status='{message}' followed='{followed}' observer=[{observerState}]", e);
+            e = new InvalidOperationException($"status='{message}' followed='{followed}' observer=[{observerState}]", e);
             throw new InvalidOperationException($"DIAG steps={window.Graph.Canvas.Graph.StepCount} traceExists={File.Exists(trace.Value)} repoExists={Directory.Exists(repo.Dir.Value)} poolThreads={ThreadPool.ThreadCount} poolPending={ThreadPool.PendingWorkItemCount} poolFree={free} cpus={Environment.ProcessorCount} culture={System.Globalization.CultureInfo.CurrentCulture.Name}", e);
         }
         return window;
