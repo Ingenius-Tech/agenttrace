@@ -373,6 +373,9 @@ public sealed partial class MainWindow
     private bool _knowledgeDirty;
     private string? _pendingKnowledgeSelect;
 
+    /// <summary>A <c>--panorama-focus</c> that the graph and Knowledge both wait for: the pane that resolves it clears it in the other.</summary>
+    private string? _sharedFocusSpec;
+
     /// <summary>What happened in the session, for the search window (Ctrl+K).</summary>
     private SearchIndex _searchIndex = new();
 
@@ -669,6 +672,7 @@ public sealed partial class MainWindow
         if (!_knowledge.Canvas.Has(absolute)) return;
         _knowledge.Canvas.Select(absolute);
         _pendingKnowledgeSelect = null;
+        if (_pendingGraphSelect is not null && _pendingGraphSelect == _sharedFocusSpec) _pendingGraphSelect = null;
     }
 
     /// <summary>The changes git reports also feed the knowledge graph and the heatmap: the trace does not see what a console command writes.</summary>
@@ -708,6 +712,7 @@ public sealed partial class MainWindow
         if (GraphSelection.Parse(_pendingGraphSelect, _graph.Canvas.Graph) is not { } selection) return;
         _graph.Canvas.Select(selection);
         _pendingGraphSelect = null;
+        if (_pendingKnowledgeSelect is not null && _pendingKnowledgeSelect == _sharedFocusSpec) _pendingKnowledgeSelect = null;
     }
 
     private void Shutdown() => _observer?.Dispose();

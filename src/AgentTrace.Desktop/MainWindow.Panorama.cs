@@ -40,7 +40,8 @@ public sealed partial class MainWindow
 
     /// <summary>
     /// <c>--panorama</c> shows only the named panes for this run (the saved layout is not touched until the user changes it) and
-    /// <c>--panorama-focus</c> selects what the matching pane would select, so the panes link when the Panorama is shown.
+    /// <c>--panorama-focus</c> selects what the matching pane would select, so the panes link when the Panorama is shown. An explicit option
+    /// of a pane (<c>--graph-select</c>, <c>--kg-select</c>, <c>--areas-select</c>) wins over <c>--panorama-focus</c> in that pane.
     /// </summary>
     public void ApplyPanoramaOptions(StartupOptions options)
     {
@@ -51,13 +52,31 @@ public sealed partial class MainWindow
             if (AreasShown) RefreshAreas();
         }
         if (options.PanoramaFocus is not { } spec) return;
-        if (spec.StartsWith("task:", StringComparison.OrdinalIgnoreCase)) _areas.SetPending(spec, options.AreasExpand);
-        else if (spec.StartsWith("turn:", StringComparison.OrdinalIgnoreCase) || spec is "last" or "last-error") SelectInGraph(spec);
+        if (spec.StartsWith("task:", StringComparison.OrdinalIgnoreCase))
+        {
+            if (options.AreasSelect is null) _areas.SetPending(spec, options.AreasExpand);
+        }
+        else if (spec.StartsWith("turn:", StringComparison.OrdinalIgnoreCase))
+        {
+            if (options.GraphSelect is null) SelectInGraph("turn:" + spec[5..]);
+        }
+        else if (spec.Equals("last", StringComparison.OrdinalIgnoreCase) || spec.Equals("last-error", StringComparison.OrdinalIgnoreCase))
+        {
+            if (options.GraphSelect is null) SelectInGraph(spec.ToLowerInvariant());
+        }
         else
         {
-            // a call id or a file: whichever exists in the data is selected
-            SelectInGraph(spec);
-            SelectInKnowledge(spec);
+            // A call id or a file: nothing tells at startup which pane owns it, so both wait for it and the one that finds it makes the
+            // other forget it (see ApplyPendingGraphSelect and ApplyPendingKnowledgeSelect)
+            _sharedFocusSpec = spec;
+            if (options.GraphSelect is null) _pendingGraphSelect = spec;
+            if (options.KnowledgeSelect is null)
+            {
+                _pendingKnowledgeSelect = spec;
+                _knowledgeDirty = true;
+            }
+            ApplyPendingGraphSelect();
+            RefreshKnowledge();
         }
     }
 

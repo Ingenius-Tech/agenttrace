@@ -358,6 +358,42 @@ public sealed class PanoramaTests : TempDirTestBase
         });
     }
 
+    [Fact]
+    public Task APanoramaFocusIsCaseInsensitiveLikeTheOptionParser()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            window.ApplyPanoramaOptions(StartupOptions.Parse(["--panorama-focus=Turn:1"]));
+            window.SwitchTab(MainWindow.PanoramaTab);
+            Settle(window);
+            Assert.Equal(FocusKind.Turn, window.LinkedFocus.Current!.Kind);
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task AnExplicitPaneOptionWinsOverThePanoramaFocus()
+    {
+        (GitFixture repo, FilePath trace, RecentProjects recent) = Project();
+        return HeadlessHost.Run(() =>
+        {
+            MainWindow window = Open(repo, trace, recent);
+            StartupOptions options = StartupOptions.Parse(["--kg-select=new.txt", "--panorama-focus=toolu_1"]);
+            window.SelectInKnowledge(options.KnowledgeSelect!); // what the startup does for --kg-select, before the file exists
+            window.ApplyPanoramaOptions(options);
+            File.WriteAllText(repo.Dir.Combine("new.txt").Value, "new\n");
+            Pump("the explicit Knowledge selection", () =>
+            {
+                window.SwitchTab(MainWindow.GraphTab);
+                window.SwitchTab(MainWindow.KnowledgeTab);
+                return window.Knowledge.Canvas.SelectedPath == repo.Dir.Combine("new.txt");
+            }, 20_000);
+            window.Close();
+        });
+    }
+
     [Theory]
     [InlineData("en-US", "en")]
     [InlineData("es-ES", "es")]
