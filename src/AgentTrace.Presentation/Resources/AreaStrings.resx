@@ -196,7 +196,7 @@
    - Within each dimension the first area (in file order) whose "include" matches a file and whose "exclude" does not wins, so put the more specific areas first. List the layers in the order you want them shown (for example Data, Domain, Application, API).
    - Patterns are relative to the repository root and use "/" as the separator. Use only *, ? and ** (no braces, no character classes, no "!": use "exclude" instead). A pattern without "/" matches at any depth; a folder pattern classifies everything below it.
 
-4. Check your work: count the tracked files (git ls-files, excluding paths with a segment that starts with a dot) matched by each area, and make sure each dimension you define classifies at least 90 % of those files. Adjust the patterns until it does, and say which files remain unclassified.
+4. Check your work: count the tracked files (git ls-files, excluding paths with a segment that starts with a dot; if this root is not a git repository, list the files on disk instead, skipping dot-paths and dependency or build folders such as node_modules, bin, obj and target) matched by each area, and make sure each dimension you define classifies at least 90 % of those files. Adjust the patterns until it does, and say which files remain unclassified.
 
 5. If this root is a git repository, add the line .agenttrace/ to the .gitignore at its root (create the file if it does not exist, and do not add the line if it is already there). If it is not a git repository, do not create or touch any .gitignore.
 

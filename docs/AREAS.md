@@ -92,7 +92,8 @@ The strip also shows, per dimension, the **coverage**: the files that dimension 
 percentage rounded down (so a partial coverage never reads as 100 %). The listed files are the same as the Heatmap's: the files on
 disk, minus what git ignores, minus paths with a segment that starts with a dot, up to 20 000 files. If the project has more, the
 strip says "Partial listing" and the coverage covers only the listed ones. The setup prompt asks the agent to measure the same
-thing (`git ls-files` without dot-paths), so the agent and the application agree.
+thing (`git ls-files` without dot-paths; in a root that is not a git repository, the files on disk without dot-paths and
+dependency or build folders), so the agent and the application agree.
 
 ### What the matrix shows
 

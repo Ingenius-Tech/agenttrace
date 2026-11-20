@@ -85,6 +85,7 @@ public sealed class AreaErrorTextTest
         Assert.Contains(".gitignore", english, StringComparison.Ordinal);
         Assert.Contains("already there", english, StringComparison.Ordinal);
         Assert.Contains("not a git repository", english, StringComparison.Ordinal);
+        Assert.Contains("node_modules", english, StringComparison.Ordinal);
         using var spanishCulture = CultureScope.Spanish();
         string spanish = AreaStrings.SetupPrompt;
         Assert.NotEqual(english, spanish);

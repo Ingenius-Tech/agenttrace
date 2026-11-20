@@ -196,7 +196,7 @@
    - Dentro de cada dimensión gana la primera área (en el orden del archivo) cuyo "include" coincide con un archivo y cuyo "exclude" no, así que pon primero las áreas más específicas. Lista las capas en el orden en que quieres verlas (por ejemplo Datos, Dominio, Aplicación, API).
    - Los patrones son relativos a la raíz del repositorio y usan "/" como separador. Usa solo *, ? y ** (sin llaves, sin clases de caracteres, sin "!": usa "exclude"). Un patrón sin "/" coincide a cualquier profundidad; un patrón de carpeta clasifica todo lo que hay debajo.
 
-4. Comprueba tu trabajo: cuenta los archivos rastreados (git ls-files, excluyendo las rutas con algún segmento que empiece por punto) que cubre cada área, y asegúrate de que cada dimensión que definas clasifique al menos el 90 % de esos archivos. Ajusta los patrones hasta lograrlo e indica qué archivos quedan sin clasificar.
+4. Comprueba tu trabajo: cuenta los archivos rastreados (git ls-files, excluyendo las rutas con algún segmento que empiece por punto; si esta raíz no es un repositorio git, lista los archivos del disco, omitiendo las rutas con punto y las carpetas de dependencias o compilación como node_modules, bin, obj y target) que cubre cada área, y asegúrate de que cada dimensión que definas clasifique al menos el 90 % de esos archivos. Ajusta los patrones hasta lograrlo e indica qué archivos quedan sin clasificar.
 
 5. Si esta raíz es un repositorio git, añade la línea .agenttrace/ al .gitignore de su raíz (crea el archivo si no existe, y no añadas la línea si ya está). Si no es un repositorio git, no crees ni toques ningún .gitignore.
 
