@@ -93,6 +93,7 @@ public sealed class AreaRulesTest
     [InlineData("-data")]
     [InlineData("da ta")]
     [InlineData("data.x")]
+    [InlineData("data\n")]
     public void AnInvalidIdIsReported(string id)
     {
         Assert.Equal(AreaRuleErrorKind.InvalidId, Single(Validate(Raw(id))).Kind);

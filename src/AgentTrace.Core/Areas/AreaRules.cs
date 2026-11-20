@@ -51,7 +51,7 @@ public sealed record AreaRules(ValueList<AreaRule> Areas)
 {
     public const int SupportedVersion = 1;
 
-    private static readonly Regex IdPattern = new("^[a-z0-9][a-z0-9_-]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex IdPattern = new(@"\A[a-z0-9][a-z0-9_-]*\z", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     public static readonly AreaRules Empty = new(ValueList<AreaRule>.Empty);
 
