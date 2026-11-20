@@ -10,6 +10,7 @@ using AgentTrace.Core.Flow;
 using AgentTrace.Desktop.Theme;
 using AgentTrace.Presentation.Graph;
 using AgentTrace.Presentation.Localization;
+using AgentTrace.Presentation.Panorama;
 using AgentTrace.Presentation.Resources;
 using AgentTrace.Presentation.Text;
 using static AgentTrace.Core.AgentEvent;
@@ -53,6 +54,7 @@ public sealed class FlowCanvasView : Grid
 
     private FlowGraph _graph = new FlowBuilder().Snapshot();
     private GraphFilter _filter = GraphFilter.None;
+    private FocusTargets? _focus;
     private IReadOnlySet<int> _collapsed = new HashSet<int>();
     private int[] _turnSteps = [];
     private int[] _turnErrors = [];
@@ -146,6 +148,28 @@ public sealed class FlowCanvasView : Grid
         UpdateView();
     }
 
+    /// <summary>The focus the Panorama is showing (what dims), or null.</summary>
+    public FocusTargets? LinkedFocus => _focus;
+
+    /// <summary>
+    /// Dims the steps that are not in the focus and the turns outside its range, and brings the first focused step (or turn) into view. It is
+    /// not a selection: it raises no event, changes neither <see cref="Selection"/> nor the folding. Null or empty targets clear it.
+    /// </summary>
+    public void ShowFocus(FocusTargets? targets, bool reveal = true)
+    {
+        _focus = targets is { IsEmpty: false } ? targets : null;
+        if (_focus is { } focus && reveal)
+        {
+            Box? target = _geometry.Boxes.FirstOrDefault(b => b.Kind == Kind.Step && b.CallId is { } id && focus.CallIds.Contains(id))
+                ?? (focus.FirstTurn is { } turn ? TurnBox(turn) : null);
+            if (target is { } box) _viewport.Reveal(box, _geometry.ContentEnd);
+        }
+        UpdateView();
+    }
+
+    private Box? TurnBox(int turn) =>
+        _geometry.FindTurnBox(turn, Kind.Prompt) ?? _geometry.FindTurnBox(turn, Kind.Answer) ?? _geometry.FindTurnBox(turn, Kind.Folded);
+
     /// <summary><c>false</c>: no automatic folding (everything unfolded until the user folds).</summary>
     public void SetAutoFold(bool auto)
     {
@@ -225,11 +249,24 @@ public sealed class FlowCanvasView : Grid
     {
         if (s is null) return null;
         if (s.IsStep) return _geometry.FindStep(s.CallId!);
-        return _geometry.FindTurnBox(s.TurnIndex, Kind.Prompt) ?? _geometry.FindTurnBox(s.TurnIndex, Kind.Answer)
-            ?? _geometry.FindTurnBox(s.TurnIndex, Kind.Folded);
+        return TurnBox(s.TurnIndex);
     }
 
-    private bool Dimmed(Box box)
+    private bool Dimmed(Box box) => FocusDims(box) || FilterDims(box);
+
+    /// <summary>Outside the focus: a step that is not one of its calls (if it names any), or a turn outside its range.</summary>
+    private bool FocusDims(Box box)
+    {
+        if (_focus is not { } focus) return false;
+        return box.Kind switch
+        {
+            Kind.Step => focus.CallIds.Count > 0 && box.CallId is { } id && !focus.CallIds.Contains(id),
+            Kind.Folded or Kind.Prompt or Kind.Answer => focus.FirstTurn is not null && !focus.HasTurn(box.TurnIndex),
+            _ => throw new System.Diagnostics.UnreachableException(),
+        };
+    }
+
+    private bool FilterDims(Box box)
     {
         if (!_filter.Active) return false;
         return box.Kind switch

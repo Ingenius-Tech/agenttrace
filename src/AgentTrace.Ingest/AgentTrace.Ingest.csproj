@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AgentTrace.Core\AgentTrace.Core.csproj" />
     <ProjectReference Include="..\AgentTrace.Diff\AgentTrace.Diff.csproj" />
+    <EmbeddedResource Include="Areas\*.json" />
     <InternalsVisibleTo Include="AgentTrace.Ingest.Tests" />
   </ItemGroup>
 </Project>

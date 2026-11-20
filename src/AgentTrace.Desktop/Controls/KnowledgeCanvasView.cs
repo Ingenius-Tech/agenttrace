@@ -35,6 +35,7 @@ public sealed partial class KnowledgeCanvasView : Control
     private FilePath? _selected;
     private FilePath? _hovered;
     private FilePath? _projectRoot;
+    private IReadOnlySet<FilePath>? _focus;
     private string _query = "";
     private bool _onlyChanged;
     private int _minWeight = 1;
@@ -137,6 +138,32 @@ public sealed partial class KnowledgeCanvasView : Control
     {
         _query = (text ?? "").Trim().ToLowerInvariant();
         InvalidateVisual();
+    }
+
+    /// <summary>The files the Panorama is highlighting (the rest are dimmed), or null.</summary>
+    public IReadOnlySet<FilePath>? LinkedFocus => _focus;
+
+    /// <summary>
+    /// Dims the nodes that are not in the set (as <see cref="SetQuery"/> does) and, in 2D, centers the view on the set when it is not on screen.
+    /// It is not a selection: it raises no event and leaves <see cref="SelectedPath"/> alone. Null or an empty set clears it.
+    /// </summary>
+    public void ShowFocus(IReadOnlySet<FilePath>? files, bool reveal = true)
+    {
+        _focus = files is { Count: > 0 } ? files : null;
+        if (_focus is { } focus && reveal && !_mode3D && Bounds.Width > 0)
+        {
+            ForceLayout.Point[] points = [.. focus.Where(_positions.ContainsKey).Select(f => _positions[f])];
+            if (points.Length > 0 && points.Any(p => !OnScreen(p)))
+                _view.CenterOn((points.Min(p => p.X) + points.Max(p => p.X)) / 2, (points.Min(p => p.Y) + points.Max(p => p.Y)) / 2, Bounds.Width, Bounds.Height);
+        }
+        InvalidateVisual();
+    }
+
+    private bool OnScreen(ForceLayout.Point p)
+    {
+        double x = _view.ToScreenX(p.X);
+        double y = _view.ToScreenY(p.Y);
+        return x >= 0 && x <= Bounds.Width && y >= 0 && y <= Bounds.Height;
     }
 
     /// <summary>Selects a file and centers it. Null clears the selection. A file that is not visible is ignored.</summary>
@@ -321,7 +348,8 @@ public sealed partial class KnowledgeCanvasView : Control
         {
             if (!_positions.TryGetValue(e.From, out ForceLayout.Point? a) || !_positions.TryGetValue(e.To, out ForceLayout.Point? b)) continue;
             bool related = _selected is { } s && (e.From == s || e.To == s);
-            double alpha = _selected is null ? crowded : related ? 0.9 : 0.08;
+            double alpha = _selected is not null ? (related ? 0.9 : 0.08)
+                : _focus is { } focus ? (focus.Contains(e.From) && focus.Contains(e.To) ? 0.9 : 0.08) : crowded;
             double width = (1 + Math.Log(e.Weight)) * (related ? 1.6 : 1) / inv;
             using (ctx.PushOpacity(alpha))
             {
@@ -364,7 +392,7 @@ public sealed partial class KnowledgeCanvasView : Control
         double r = KnowledgeView.Radius(n);
         bool matches = _query.Length == 0 || n.Path.FileName.ToLowerInvariant().Contains(_query, StringComparison.Ordinal);
         bool inFocus = _selected is null || neighbours.Contains(n.Path);
-        using (ctx.PushOpacity(matches && inFocus ? 1 : matches ? 0.4 : Dim))
+        using (ctx.PushOpacity(NodeOpacity(n.Path, matches, inFocus)))
         {
             var center = new Point(p.X, p.Y);
             Pen outline = n.OnlyExternal
@@ -385,6 +413,10 @@ public sealed partial class KnowledgeCanvasView : Control
         }
     }
 
+    /// <summary>Full for a node that matches the search, is near the selection and is in the focus; each thing it fails dims it more.</summary>
+    private double NodeOpacity(FilePath path, bool matches, bool inFocus) =>
+        !matches ? Dim : !inFocus ? 0.4 : _focus is { } focus && !focus.Contains(path) ? 0.3 : 1;
+
     /// <summary>Legend and count, in screen coordinates.</summary>
     private void PaintOverlay(DrawingContext ctx, double w, double h)
     {
@@ -399,8 +431,36 @@ public sealed partial class KnowledgeCanvasView : Control
             DrawText(ctx, labels[i], x + 15, y - 11, 11, AppColors.Muted);
             x += 25 + labels[i].Length * 6.2;
         }
-        DrawText(ctx, MapStrings.KnowledgeLegendNote, x + 10, y - 11, 11, AppColors.Muted);
+        FormattedText note = LegendNote(w, out Rect rect);
+        ctx.DrawText(note, rect.TopLeft);
     }
+
+    /// <summary>
+    /// The note of the legend: after the color keys when it fits, otherwise on a line of its own above them (shortened with an
+    /// ellipsis only if it is wider than the whole canvas), so a narrow pane never clips it silently.
+    /// </summary>
+    private FormattedText LegendNote(double w, out Rect rect)
+    {
+        double x = 14;
+        foreach (string label in new[] { MapStrings.LegendCreated, MapStrings.LegendModified, MapStrings.LegendDeleted, MapStrings.LegendRead }) x += 25 + label.Length * 6.2;
+        FormattedText note = Text(MapStrings.KnowledgeLegendNote, 11, AppColors.Muted, Sans);
+        note.MaxTextWidth = double.PositiveInfinity;
+        note.MaxLineCount = 1;
+        note.Trimming = TextTrimming.CharacterEllipsis;
+        double top = Bounds.Height - 14 - 11;
+        bool fits = x + 10 + note.Width <= w - 8;
+        double left = fits ? x + 10 : 14;
+        if (!fits)
+        {
+            top -= 16;
+            note.MaxTextWidth = Math.Max(1, w - 14 - 8);
+        }
+        rect = new Rect(left, top, Math.Min(note.Width, Math.Max(1, w - left - 8)), note.Height);
+        return note;
+    }
+
+    /// <summary>Where the legend note is drawn in a canvas of the given width (for tests).</summary>
+    public Rect LegendNoteBounds(double width) { LegendNote(width, out Rect rect); return rect; }
 
     private FormattedText Text(string text, double size, Color color, Typeface typeface)
     {

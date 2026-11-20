@@ -49,6 +49,32 @@ public sealed class KnowledgePaneTests
     }
 
     [Fact]
+    public Task TheLegendNoteWrapsOntoItsOwnLineInsteadOfBeingClippedWhenItDoesNotFit() => HeadlessHost.Run(() =>
+    {
+        var pane = new KnowledgePane(_ => { }, _ => { });
+        var window = new Window { Width = 1200, Height = 700, Content = pane };
+        window.Show();
+        pane.SetProjectRoot(Root);
+        pane.SetGraph(Session());
+        window.UpdateLayout();
+        KnowledgeCanvasView canvas = pane.Canvas;
+
+        // Wide: after the color keys, on the same line
+        Avalonia.Rect wide = canvas.LegendNoteBounds(1100);
+        Assert.True(wide.Right <= 1100);
+        // Narrow: its own line above the keys, never past the right edge
+        foreach (double width in new[] { 420.0, 300.0, 200.0 })
+        {
+            Avalonia.Rect narrow = canvas.LegendNoteBounds(width);
+            Assert.True(narrow.Right <= width + 0.5, $"width {width}: the legend note is clipped at the right edge ({narrow})");
+            Assert.True(narrow.Y < wide.Y, "the note moved above the color keys");
+        }
+        window.Width = 420;
+        window.UpdateLayout();
+        Save(window, "knowledge-legend-narrow");
+    });
+
+    [Fact]
     public Task The3DViewDrawsTheTimeAxisAndSelectsByProjection() => HeadlessHost.Run(() =>
     {
         var pane = new KnowledgePane(_ => { }, _ => { });

@@ -22,10 +22,10 @@ public sealed partial class ResourceParityTest
         [.. Directory.GetFiles(ResourcesDir, "*.resx").Where(f => Path.GetFileNameWithoutExtension(f).Count(c => c == '.') == 0).Order()];
 
     [Fact]
-    public void TheFiveAreasExist()
+    public void TheSixAreasExist()
     {
         Assert.Equal(
-            ["CommonStrings", "GraphStrings", "MapStrings", "ShellStrings", "TextStrings"],
+            ["AreaStrings", "CommonStrings", "GraphStrings", "MapStrings", "ShellStrings", "TextStrings"],
             NeutralFiles().Select(Path.GetFileNameWithoutExtension));
     }
 

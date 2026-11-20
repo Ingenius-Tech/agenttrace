@@ -8,6 +8,7 @@ using AgentTrace.Desktop.Composition;
 using AgentTrace.Desktop.Controls;
 using AgentTrace.Git;
 using AgentTrace.Ingest;
+using AgentTrace.Presentation.Areas;
 using AgentTrace.Presentation.Graph;
 using AgentTrace.Presentation.Heatmap;
 using AgentTrace.Presentation.Observation;
@@ -60,6 +61,7 @@ public sealed partial class MainWindow
         _recent.Add(project);
         _projectPath.Text = project.FileName.Length == 0 ? project.Value : project.FileName;
         _stats = new SessionStats();
+        _followedSession = null;
         _statusBar.Message = string.Format(CultureInfo.CurrentCulture, ShellStrings.StatusMonitoringFormat, project);
         _statusBar.SetStats(StatusSegments.Of(_stats));
         ResetAnalysis();
@@ -96,6 +98,8 @@ public sealed partial class MainWindow
             window._stats = new SessionStats();
             window._statusBar.SetStats(StatusSegments.Of(window._stats));
             window.ResetAnalysis();
+            window._followedSession = sessionTrace.FileName;
+            window.ScheduleAreasRefresh();
             window._statusBar.Message = string.Format(CultureInfo.CurrentCulture, ShellStrings.StatusSessionFormat, agent, sessionTrace.FileName);
         });
 
@@ -161,8 +165,10 @@ public sealed partial class MainWindow
                     _lastIndex = index;
                     _lastRules = rules;
                     _heatmapDiskDirty = true;
+                    _areasDiskDirty = true;
                     _tree.Update(rules, index);
                     ScheduleHeatmapRefresh();
+                    ScheduleAreasRefresh();
                     RefreshOpenFileStatus();
                     ReloadOpenFile(false);
                 });
@@ -367,6 +373,9 @@ public sealed partial class MainWindow
     private bool _knowledgeDirty;
     private string? _pendingKnowledgeSelect;
 
+    /// <summary>A <c>--panorama-focus</c> that the graph and Knowledge both wait for: the pane that resolves it clears it in the other.</summary>
+    private string? _sharedFocusSpec;
+
     /// <summary>What happened in the session, for the search window (Ctrl+K).</summary>
     private SearchIndex _searchIndex = new();
 
@@ -391,6 +400,11 @@ public sealed partial class MainWindow
         _heatmapListing = null;
         _pendingHeatmapZoom = null;
         _pendingHeatmapSelect = null;
+        _areas.Clear();
+        _areasRepos = null;
+        _areasPass.Cancel();
+        _areasDirty = true;
+        _areasDiskDirty = true;
     }
 
     private void OnEventsForAnalysis(IReadOnlyList<AgentEvent> events)
@@ -405,6 +419,7 @@ public sealed partial class MainWindow
         ScheduleGraphRefresh();
         ScheduleKnowledgeRefresh();
         ScheduleHeatmapRefresh();
+        ScheduleAreasRefresh();
     }
 
     /// <summary>With the search window open, a new result appears without repeating the search (at most every 500 ms).</summary>
@@ -469,12 +484,12 @@ public sealed partial class MainWindow
     private void ScheduleKnowledgeRefresh()
     {
         _knowledgeDirty = true;
-        if (_knowledgeRefreshPending || _tabs.SelectedIndex != KnowledgeTab) return;
+        if (_knowledgeRefreshPending || !KnowledgeShown) return;
         _knowledgeRefreshPending = true;
         DispatcherTimer.RunOnce(() =>
         {
             _knowledgeRefreshPending = false;
-            RefreshKnowledge();
+            if (KnowledgeShown) RefreshKnowledge(); // hidden meanwhile: it stays dirty and the next time it is shown it is brought up to date
         }, TimeSpan.FromMilliseconds(1000));
     }
 
@@ -484,6 +499,7 @@ public sealed partial class MainWindow
         _knowledgeDirty = false;
         _knowledge.SetGraph(_knowledgeBuilder.Snapshot());
         ApplyPendingKnowledgeSelect();
+        ReapplyLinkedFocus();
     }
 
     // ---- heatmap ----
@@ -510,7 +526,7 @@ public sealed partial class MainWindow
         DispatcherTimer.RunOnce(() =>
         {
             _heatmapRefreshPending = false;
-            RefreshHeatmap();
+            if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
         }, TimeSpan.FromMilliseconds(1000));
     }
 
@@ -570,6 +586,67 @@ public sealed partial class MainWindow
         }
     }
 
+    // ---- areas map ----
+
+    private bool _areasRefreshPending;
+    private readonly SinglePass _areasPass = new();
+    private bool _areasDirty = true;
+
+    /// <summary>Trace file name of the followed session (the status bar's), null until one is found.</summary>
+    private string? _followedSession;
+
+    /// <summary>The disk must be listed again and the rules files read again (the observer reported changes).</summary>
+    private bool _areasDiskDirty = true;
+
+    private AreaRepoSet? _areasRepos;
+
+    /// <summary>Repaints the areas map at most once a second, and only if its tab is in view.</summary>
+    private void ScheduleAreasRefresh()
+    {
+        _areasDirty = true;
+        if (_areasRefreshPending || !AreasShown) return;
+        _areasRefreshPending = true;
+        DispatcherTimer.RunOnce(() =>
+        {
+            _areasRefreshPending = false;
+            if (AreasShown) RefreshAreas();
+        }, TimeSpan.FromMilliseconds(1000));
+    }
+
+    /// <summary>
+    /// Rebuilds the areas map: the flow is taken here, on the UI thread; the listing, the rules files and the activity per file are computed on a
+    /// separate thread (the listing is the heatmap's: one cache). Only one pass at a time.
+    /// </summary>
+    private void RefreshAreas()
+    {
+        if (!_areasDirty || _observer is not { } current || CurrentProject is not { } project) return;
+        if (_areasPass.Busy) return;
+        _areasDirty = false;
+        bool rescan = _areasDiskDirty || _heatmapListing is null || _areasRepos is null;
+        _areasDiskDirty = false;
+        long mine = _generation;
+        FlowGraph flow = _flow.Snapshot();
+        string? session = _followedSession;
+        IReadOnlyList<ChangeEntry> changes = _lastChanges;
+        FileStatusIndex index = _lastIndex;
+        IgnoreRules? rules = _lastRules;
+        ProjectListing? known = _heatmapListing;
+        AreaRepoSet? knownRepos = _areasRepos;
+        _areasPass.TryRun(() =>
+        {
+            ProjectListing listing = rescan ? ProjectScanner.Scan(project, rules ?? current.IgnoreRules(), index, ProjectScanner.DefaultMaxFiles) : known!;
+            AreaRepoSet repos = rescan ? AreaRepoSet.Load(current.RepositoryRoots(), listing, knownRepos) : knownRepos!;
+            return (listing, repos, snapshot: AreasSnapshot.Of(flow, changes, repos, project, listing, session));
+        }, done =>
+        {
+            _heatmapListing = done.listing;
+            _areasRepos = done.repos;
+            _areas.SetSnapshot(done.snapshot);
+            ReapplyLinkedFocus();
+            if (_areasDirty) ScheduleAreasRefresh();
+        }, action => OnUi(mine, action));
+    }
+
     /// <summary>Shows "Knowledge" with that file selected.</summary>
     private void ShowInKnowledge(FilePath path)
     {
@@ -592,6 +669,7 @@ public sealed partial class MainWindow
         if (!_knowledge.Canvas.Has(absolute)) return;
         _knowledge.Canvas.Select(absolute);
         _pendingKnowledgeSelect = null;
+        if (_pendingGraphSelect is not null && _pendingGraphSelect == _sharedFocusSpec) _pendingGraphSelect = null;
     }
 
     /// <summary>The changes git reports also feed the knowledge graph and the heatmap: the trace does not see what a console command writes.</summary>
@@ -601,6 +679,7 @@ public sealed partial class MainWindow
         _knowledgeBuilder.SetChanges(changes);
         ScheduleKnowledgeRefresh();
         ScheduleHeatmapRefresh();
+        ScheduleAreasRefresh();
     }
 
     /// <summary>Repaints the graph at most every 250 ms: bursts of events are grouped.</summary>
@@ -613,6 +692,7 @@ public sealed partial class MainWindow
             _graphRefreshPending = false;
             _graph.SetGraph(_flow.Snapshot());
             ApplyPendingGraphSelect();
+            ReapplyLinkedFocus();
         }, TimeSpan.FromMilliseconds(250));
     }
 
@@ -629,6 +709,7 @@ public sealed partial class MainWindow
         if (GraphSelection.Parse(_pendingGraphSelect, _graph.Canvas.Graph) is not { } selection) return;
         _graph.Canvas.Select(selection);
         _pendingGraphSelect = null;
+        if (_pendingKnowledgeSelect is not null && _pendingKnowledgeSelect == _sharedFocusSpec) _pendingKnowledgeSelect = null;
     }
 
     private void Shutdown() => _observer?.Dispose();

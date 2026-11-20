@@ -492,6 +492,15 @@ public sealed class ProjectObserver : IDisposable
         return source.Versions(file);
     }
 
+    /// <summary>
+    /// Roots of the observed repositories (several if the project folder holds them), or the project folder alone when there is no git
+    /// (or it is not known yet). The deepest root containing a path is the one whose rules classify it.
+    /// </summary>
+    public IReadOnlyList<FilePath> RepositoryRoots()
+    {
+        lock (_lock) return _slots.Count == 0 ? [ProjectDir] : [.. _slots.Select(s => s.Repo.Root)];
+    }
+
     /// <summary>What is hidden in the tree. With git it queries git, so it must not be called from the UI thread.</summary>
     public IgnoreRules IgnoreRules()
     {

@@ -18,7 +18,7 @@ namespace AgentTrace.Desktop.Tests;
 
 /// <summary>
 /// The whole window, end to end and without a screen: a project with real git, an agent whose trace is the synthetic Claude Code
-/// one and the six tabs populated.
+/// one and the eight tabs populated.
 /// </summary>
 public sealed class MainWindowTests : TempDirTestBase
 {
@@ -55,9 +55,20 @@ public sealed class MainWindowTests : TempDirTestBase
         {
             Dispatcher.UIThread.RunJobs();
             if (condition()) return;
-            Thread.Sleep(20);
+            YieldToTheDispatcher(20);
         }
         Assert.Fail("Timed out waiting for: " + what);
+    }
+
+    /// <summary>
+    /// Runs the dispatcher loop for a moment. <c>RunJobs</c> alone does not fire <c>DispatcherTimer</c>s on every platform (on Linux the
+    /// first test of the process never saw the 250 ms graph refresh), the loop does.
+    /// </summary>
+    private static void YieldToTheDispatcher(int millis)
+    {
+        var frame = new DispatcherFrame();
+        _ = Task.Delay(millis).ContinueWith(_ => Dispatcher.UIThread.Post(() => frame.Continue = false), TaskScheduler.Default);
+        Dispatcher.UIThread.PushFrame(frame);
     }
 
     /// <summary>
@@ -87,7 +98,7 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task AnObservedProjectFillsTheSixTabsAndTheKeyboardSwitchesThem()
+    public Task AnObservedProjectFillsTheEightTabsAndTheKeyboardSwitchesThem()
     {
         Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
         GitFixture repo = GitFixture.Init(Dir.Combine("project"));
@@ -99,7 +110,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
 
@@ -120,8 +131,8 @@ public sealed class MainWindowTests : TempDirTestBase
             Assert.Equal(MainWindow.FileTab, window.Tabs.SelectedIndex);
             Pump("its content", () => window.FileView.Viewer.Text.Contains("# Project", StringComparison.Ordinal));
 
-            // Ctrl+1..6 switch tabs (the sixth is the heatmap)
-            for (int i = 1; i <= 6; i++)
+            // Ctrl+1..8 switch tabs (the sixth is the heatmap, the seventh the areas map, the eighth the Panorama)
+            for (int i = 1; i <= 8; i++)
             {
                 Key key = Key.D1 + (i - 1);
                 window.KeyPress(key, RawInputModifiers.Control, PhysicalKey.Digit1 + (i - 1), i.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -164,6 +175,17 @@ public sealed class MainWindowTests : TempDirTestBase
             }, 20_000);
             Assert.Single(window.Knowledge.Canvas.Graph.Nodes);
 
+            // The areas map places the same git change in the suggested module of the repository (as with the heatmap, it is brought up to date by coming back to the tab)
+            Pump("the areas map", () =>
+            {
+                WriteNewFile();
+                window.SwitchTab(MainWindow.GraphTab);
+                window.SwitchTab(MainWindow.AreasTab);
+                return window.Areas.Canvas.Matrix.Rows.Any(r => r.Files > 0);
+            }, 20_000);
+            Assert.Equal([repo.Dir.FileName], window.Areas.Canvas.Matrix.Rows.Select(r => r.Name).ToArray());
+            Save(window, "main-areas-live");
+
             // A real change on disk appears in the Inspector and its diff has the expected rows
             File.WriteAllText(repo.Dir.Combine("README.md").Value, "# Project\nnew line ñ\n"); // lang-ok: non-ASCII content
             Pump("the change in the Inspector", () => window.Diff.Items.Any(e => e.Change.Path.FileName == "README.md"), 20_000);
@@ -173,6 +195,76 @@ public sealed class MainWindowTests : TempDirTestBase
             Dispatcher.UIThread.RunJobs();
             Save(window, "main-diff-real");
 
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public Task WritingTheRulesFileInARunningApplicationSwitchesTheAreasMapFromSuggestedToFileRules()
+    {
+        Assert.SkipUnless(GitFixture.GitAvailable(), "This test needs git installed");
+        GitFixture repo = GitFixture.Init(Dir.Combine("project"));
+        repo.Write("src/Program.cs", "class Program { static void Main() { } }\n");
+        repo.Write("README.md", "# Project\n");
+        repo.CommitAll("base");
+        FilePath trace = new FilePath(AppContext.BaseDirectory).Combine("TestData", "claude", "projects", "D--fake-proj", Session + ".jsonl");
+        var recent = new RecentProjects(Dir.Combine("history.txt"));
+        FilePath rulesFile = repo.Dir.Combine(".agenttrace", "areas.json");
+        Directory.CreateDirectory(rulesFile.Parent!.Value.Value);
+
+        // The 1 s timer refresh does not run in the headless dispatcher: the repaint is requested by coming back to the tab
+        static void Refresh(MainWindow window)
+        {
+            window.SwitchTab(MainWindow.GraphTab);
+            window.SwitchTab(MainWindow.AreasTab);
+        }
+
+        return HeadlessHost.Run(() =>
+        {
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
+            window.Show();
+            window.OpenProject(repo.Dir);
+            window.SwitchTab(MainWindow.AreasTab);
+
+            // No rules file: suggested rules, coverage over the listed files and the offer to copy the setup prompt
+            Pump("the suggested rules", () =>
+            {
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceSuggested && window.Areas.CoverageText.Length > 0;
+            }, 20_000);
+            Assert.True(window.Areas.CopyPromptButton.IsVisible);
+            Assert.Contains("Kind", window.Areas.CoverageText, StringComparison.Ordinal);
+            Save(window, "main-areas-suggested");
+
+            // The file is written (rewritten with different content until it is seen): the file rules replace the suggested ones
+            int version = 0;
+            void WriteRules() => WriteText(rulesFile.Value,
+                "{ \"version\": 1, \"areas\": [ { \"id\": \"docs\", \"name\": \"Docs\", \"dimension\": \"layer\", \"include\": [\"*.md\"] } ]" + new string(' ', ++version) + "}");
+            WriteRules();
+            Pump("the rules of the file", () =>
+            {
+                WriteRules();
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceFile;
+            }, 20_000);
+            Assert.False(window.Areas.CopyPromptButton.IsVisible);
+            Assert.Contains("Layer 50%", window.Areas.CoverageText, StringComparison.Ordinal);
+            Assert.Empty(window.Areas.ErrorTexts);
+            Save(window, "main-areas-file");
+
+            // An invalid file is reported and the suggested rules come back
+            int broken = 0;
+            void WriteBroken() => WriteText(rulesFile.Value, "{ \"version\": 1, \"areas\": [ " + new string(' ', ++broken));
+            WriteBroken();
+            Pump("the errors of the file", () =>
+            {
+                WriteBroken();
+                Refresh(window);
+                return window.Areas.SourceText == AreaStrings.SourceInvalid;
+            }, 20_000);
+            Assert.NotEmpty(window.Areas.ErrorTexts);
+            Assert.True(window.Areas.CopyPromptButton.IsVisible);
+            Save(window, "main-areas-invalid");
             window.Close();
         });
     }
@@ -193,7 +285,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(root);
             Pump("the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "api"));
@@ -238,7 +330,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(root);
             Pump("the tree", () => window.Tree.VisibleNodes().Any(n => n.Node.Name == "api"));
@@ -277,7 +369,7 @@ public sealed class MainWindowTests : TempDirTestBase
 
         return HeadlessHost.Run(() =>
         {
-            var window = new MainWindow([new FixedTraceAdapter(trace)], recent) { Width = 1400, Height = 850 };
+            var window = new MainWindow([new FixedTraceAdapter(trace)], recent, panorama: new PanoramaPreference(Dir.Combine("panorama.txt"))) { Width = 1400, Height = 850 };
             window.Show();
             window.OpenProject(repo.Dir);
             Pump("the graph", () => window.Graph.Canvas.Graph.StepCount > 0);
@@ -310,12 +402,12 @@ public sealed class MainWindowTests : TempDirTestBase
     }
 
     [Fact]
-    public Task TheWindowOpensWithTheDarkThemeTheTitleAndSixTabs() => HeadlessHost.Run(() =>
+    public Task TheWindowOpensWithTheDarkThemeTheTitleAndEightTabs() => HeadlessHost.Run(() =>
     {
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("vacio.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         Assert.Equal(MainWindow.AppTitle, window.Title);
-        Assert.Equal(6, window.Tabs.ItemCount);
+        Assert.Equal(8, window.Tabs.ItemCount);
         Assert.Equal(MainWindow.GraphTab, window.Tabs.SelectedIndex);
         window.Close();
     });
@@ -323,13 +415,13 @@ public sealed class MainWindowTests : TempDirTestBase
     [Fact]
     public Task TheTabHeadersAndTheTopBarComeFromTheResources() => HeadlessHost.Run(() =>
     {
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
         Assert.Equal(
-            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap],
+            [ShellStrings.TabExecutionGraph, ShellStrings.TabDiffInspector, ShellStrings.TabProcessTelemetry, ShellStrings.TabFile, ShellStrings.TabKnowledge, ShellStrings.TabHeatmap, ShellStrings.TabAreas, ShellStrings.TabPanorama],
             headers);
-        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap"], headers);
+        Assert.Equal(["Execution graph", "Diff inspector", "Process telemetry", "File", "Knowledge", "Heatmap", "Areas map", "Panorama"], headers);
         Assert.Equal("Ready: open a project to start", window.StatusBar.Message);
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "No project open");
         window.Close();
@@ -339,10 +431,10 @@ public sealed class MainWindowTests : TempDirTestBase
     public Task TheWindowTextsAreSpanishWhenTheUiThreadRunsInSpanish() => HeadlessHost.Run(() =>
     {
         using var _ = CultureScope.Spanish();
-        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")));
+        var window = new MainWindow([], new RecentProjects(Dir.Combine("empty.txt")), panorama: new PanoramaPreference(Dir.Combine("panorama.txt")));
         window.Show();
         string?[] headers = [.. window.Tabs.Items.OfType<TabItem>().Select(t => t.Header as string)];
-        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor"], headers); // lang-ok
+        Assert.Equal(["Grafo de Ejecución", "Inspector de Diffs", "Telemetría de Procesos", "Archivo", "Conocimiento", "Mapa de calor", "Mapa de áreas", "Vista global"], headers); // lang-ok
         Assert.Equal("Listo: abre un proyecto para empezar", window.StatusBar.Message); // lang-ok
         Assert.Contains(window.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "Ningún proyecto abierto"); // lang-ok
         window.Close();

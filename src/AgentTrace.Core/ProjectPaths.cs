@@ -17,4 +17,7 @@ public static class ProjectPaths
         }
         return false;
     }
+
+    /// <summary>True if <paramref name="path"/> is inside <paramref name="root"/> and not hidden (see <see cref="IsHidden"/>): the paths the tracking views follow.</summary>
+    public static bool IsFollowed(FilePath root, FilePath path) => path.IsUnder(root) && !IsHidden(root, path);
 }

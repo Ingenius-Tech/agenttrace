@@ -40,4 +40,22 @@ public sealed class ProjectPathsTest
         var other = new FilePath(OperatingSystem.IsWindows() ? @"C:\other\.claude\x" : "/other/.claude/x");
         Assert.False(ProjectPaths.IsHidden(Root, other));
     }
+
+    [Theory]
+    [InlineData("src/Program.cs", true)]
+    [InlineData("README.md", true)]
+    [InlineData(".claude/settings.json", false)]
+    [InlineData("src/.cache/x", false)]
+    public void APathIsFollowedIfItIsInsideTheRootAndNotHidden(string relative, bool expected)
+    {
+        Assert.Equal(expected, ProjectPaths.IsFollowed(Root, Root.Combine(relative.Split('/'))));
+    }
+
+    [Fact]
+    public void APathOutsideTheRootIsNotFollowed()
+    {
+        var other = new FilePath(OperatingSystem.IsWindows() ? @"C:\other\src.cs" : "/other/src/a.cs");
+        Assert.False(ProjectPaths.IsFollowed(Root, other));
+        Assert.True(ProjectPaths.IsFollowed(Root, Root));
+    }
 }

@@ -40,6 +40,21 @@ C# specifics: `AgentEvent` is an `abstract record` with sealed nested records (`
   emitted more than once for the same subagent from different sources: the consumer is idempotent.
 - The core depends on no agent and no Avalonia. The adapter may use `System.Text.Json`.
 
+## What the Areas map needs from an adapter
+
+The Areas map (`docs/AREAS.md`) is built only from the neutral events and from git, so an adapter needs nothing specific to it. It
+relies on three things that the rest of the application already asks for:
+
+- **A main-thread `UserMessage` for each real user prompt.** It opens a turn, and a prompt turn plus the turns that follow without a
+  new prompt form a **task** (the columns and their headers). Without it everything lands in a single task. Do not emit a
+  `UserMessage` for tool results or injected context.
+- **`FileRead` and `FileChanged` with the `CallId` of the call that caused them.** The cell of an area in a turn comes from the
+  step that touched the file; the call id is also what lets `ChangeCorrelator` attribute the changes git reports to the right step.
+- **`ToolCall.Target`** (the main file of the call) so that a failing `ToolResult` is counted as an error on that file's area. Without it
+  the errors are counted without a file and no area shows them.
+
+Classification itself (which area a path is in) comes from the rules file or the suggested rules, never from the adapter.
+
 ## Available events
 
 `UserMessage`, `AssistantText`, `Thinking`, `ToolCall`, `ToolResult`, `FileChanged`, `FileRead`, `SubagentStarted`, `TokenUsage`, `TurnEnded`, `Skipped`.
