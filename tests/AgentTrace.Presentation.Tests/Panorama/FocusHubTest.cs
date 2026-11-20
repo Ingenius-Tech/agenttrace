@@ -31,6 +31,19 @@ public sealed class FocusHubTest
     }
 
     [Fact]
+    public void AFocusWhoseApplyThrowsIsNotKeptAndCanBePublishedAgain()
+    {
+        var hub = new FocusHub { Active = true };
+        Assert.Throws<InvalidOperationException>(() => hub.Publish(Step, _ => throw new InvalidOperationException()));
+        Assert.Null(hub.Current);
+        Assert.False(hub.Applying);
+        int applied = 0;
+        Assert.True(hub.Publish(Step, _ => applied++));
+        Assert.Equal(1, applied);
+        Assert.Equal(Step, hub.Current);
+    }
+
+    [Fact]
     public void ClearingIsAChangeAndClearingTwiceIsNot()
     {
         var hub = new FocusHub { Active = true };

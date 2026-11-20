@@ -27,11 +27,11 @@ public sealed class FocusHub
     public bool Publish(TraceFocus? focus, Action<TraceFocus?> apply)
     {
         if (!Active || Applying || Equals(focus, Current)) return false;
-        Current = focus;
         Applying = true;
         try
         {
             apply(focus);
+            Current = focus; // only once applied: a failed apply leaves the previous focus, so the same selection can be tried again
         }
         finally
         {
