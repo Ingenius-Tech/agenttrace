@@ -162,8 +162,10 @@ public sealed class GitChangeSource : IChangeSource
         // A file that is now a folder is no longer the same one
         if (!File.Exists(path.Value)) return false;
         long size = new FileInfo(path.Value).Length;
-        if (snapshot.TooLarge) return size == snapshot.Size && ModifiedMillis(path) == snapshot.ModifiedMillis;
-        return size == snapshot.Size && File.ReadAllBytes(path.Value).AsSpan().SequenceEqual(snapshot.Content!);
+        if (size != snapshot.Size) return false;
+        // Same size and same modified time: it is not read again on every refresh (a file that was touched is compared by content)
+        if (ModifiedMillis(path) == snapshot.ModifiedMillis) return true;
+        return !snapshot.TooLarge && File.ReadAllBytes(path.Value).AsSpan().SequenceEqual(snapshot.Content!);
     }
 
     // ---- git queries ----
