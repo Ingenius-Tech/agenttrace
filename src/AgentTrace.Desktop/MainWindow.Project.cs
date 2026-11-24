@@ -76,7 +76,7 @@ public sealed partial class MainWindow
         _file.Clear();
         _tree.SetProject(project);
 
-        _observer = new ProjectObserver(project, _adapters, new UiListener(this, mine));
+        _observer = new ProjectObserver(project, _adapters, GitCli.ForDirectory(project), Timing, new UiListener(this, mine));
         _statusBar.Message = string.Format(CultureInfo.CurrentCulture, ShellStrings.StatusWaitingFormat, project.FileName.Length == 0 ? project.Value : project.FileName);
         // Locating the repository and taking the baseline runs git: off the UI thread
         ProjectObserver started = _observer;
@@ -141,6 +141,9 @@ public sealed partial class MainWindow
 
     // ---- the tree ----
 
+    /// <summary>How often the observation looks at the disk (see <see cref="ObservationTiming"/>); tests shorten it before opening a project.</summary>
+    public static ObservationTiming Timing { get; set; } = ObservationTiming.Default;
+
     /// <summary>
     /// Requests a repaint of the tree. Bursts of notifications are grouped (300 ms) and the work that queries git (what is ignored)
     /// is done off the UI thread.
@@ -173,7 +176,7 @@ public sealed partial class MainWindow
                     ReloadOpenFile(false);
                 });
             });
-        }, TimeSpan.FromMilliseconds(300));
+        }, Timing.DiskRefresh);
     }
 
     // ---- the open file ----
@@ -517,7 +520,7 @@ public sealed partial class MainWindow
     private string? _pendingHeatmapZoom;
     private string? _pendingHeatmapSelect;
 
-    /// <summary>Repaints the heatmap at most once a second, and only if its tab is in view.</summary>
+    /// <summary>Repaints the heatmap at most once per <see cref="ObservationTiming.DiskRefresh"/>, and only if its tab is in view.</summary>
     private void ScheduleHeatmapRefresh()
     {
         _heatmapDirty = true;
@@ -527,7 +530,7 @@ public sealed partial class MainWindow
         {
             _heatmapRefreshPending = false;
             if (_tabs.SelectedIndex == HeatmapTab) RefreshHeatmap();
-        }, TimeSpan.FromMilliseconds(1000));
+        }, Timing.DiskRefresh);
     }
 
     /// <summary>
@@ -600,7 +603,7 @@ public sealed partial class MainWindow
 
     private AreaRepoSet? _areasRepos;
 
-    /// <summary>Repaints the areas map at most once a second, and only if its tab is in view.</summary>
+    /// <summary>Repaints the areas map at most once per <see cref="ObservationTiming.DiskRefresh"/>, and only if its tab is in view.</summary>
     private void ScheduleAreasRefresh()
     {
         _areasDirty = true;
@@ -610,7 +613,7 @@ public sealed partial class MainWindow
         {
             _areasRefreshPending = false;
             if (AreasShown) RefreshAreas();
-        }, TimeSpan.FromMilliseconds(1000));
+        }, Timing.DiskRefresh);
     }
 
     /// <summary>

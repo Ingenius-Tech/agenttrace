@@ -61,6 +61,42 @@ public sealed class LocalFileSystemWatcherTest : TempDirTestBase
     }
 
     [Fact]
+    public void FoldersTheFilterIgnoresDoNotRaiseNoticesButTheRestStillDoes()
+    {
+        FilePath build = Dir.Combine("bin", "Debug");
+        Directory.CreateDirectory(build.Value);
+        int notices = 0;
+        using var w = new LocalFileSystemWatcher(() => Interlocked.Increment(ref notices))
+        {
+            IsIgnored = p => p.IsUnder(Dir.Combine("bin")),
+        };
+        w.StartWatching(Dir);
+        File.WriteAllText(build.Combine("out.dll").Value, "x");
+        Thread.Sleep(500);
+        Assert.Equal(0, Volatile.Read(ref notices));
+        File.WriteAllText(Dir.Combine("source.cs").Value, "x");
+        Eventually.Until("notice for a file the filter does not ignore", () => Volatile.Read(ref notices) > 0);
+    }
+
+    [Fact]
+    public void OnlyTheFilesThatSignalACommitOrCheckoutRaiseNoticesInGitsDirectory()
+    {
+        FilePath gitDir = Dir.Combine("git-data");
+        FilePath project = Dir.Combine("project");
+        Directory.CreateDirectory(gitDir.Value);
+        Directory.CreateDirectory(project.Value);
+        int notices = 0;
+        using var w = new LocalFileSystemWatcher(() => Interlocked.Increment(ref notices));
+        w.StartWatching(project, gitDir);
+        File.WriteAllText(gitDir.Combine("FETCH_HEAD").Value, "x");
+        File.WriteAllText(gitDir.Combine("index.lock").Value, "x");
+        Thread.Sleep(500);
+        Assert.Equal(0, Volatile.Read(ref notices));
+        File.WriteAllText(gitDir.Combine("index").Value, "x");
+        Eventually.Until("notice for the index", () => Volatile.Read(ref notices) > 0);
+    }
+
+    [Fact]
     public void DisposingTwiceIsHarmlessAndStopsNotices()
     {
         int notices = 0;

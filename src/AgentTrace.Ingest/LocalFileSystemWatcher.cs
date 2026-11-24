@@ -11,9 +11,23 @@ public sealed class LocalFileSystemWatcher(Action onChange) : IDisposable
 {
     private const int BufferSize = 64 * 1024;
 
+    /// <summary>Files of git's data directory whose change means a commit, a checkout or a staging: the rest is git's own housekeeping.</summary>
+    private static readonly HashSet<string> GitSignals =
+        new(["HEAD", "index", "packed-refs", "ORIG_HEAD", "MERGE_HEAD", "COMMIT_EDITMSG"], StringComparer.Ordinal);
+
     private readonly List<FileSystemWatcher> _watchers = [];
     private readonly object _gate = new();
     private volatile bool _disposed;
+    private volatile Func<FilePath, bool>? _isIgnored;
+
+    /// <summary>
+    /// Extra filter for events inside the project (for example, what git ignores: <c>bin</c>, <c>obj</c>, <c>dist</c>). Called for every
+    /// event, so it must be cheap; it can be set or replaced at any time.
+    /// </summary>
+    public Func<FilePath, bool>? IsIgnored
+    {
+        set => _isIgnored = value;
+    }
 
     /// <summary>
     /// Watches the project recursively and, without recursion, each extra folder (for example, git's
@@ -26,7 +40,10 @@ public sealed class LocalFileSystemWatcher(Action onChange) : IDisposable
         foreach (FilePath extra in extraDirectories) Watch(extra);
     }
 
-    /// <summary>Also watches a folder, without recursion (for example, git's data directory once the repository is located).</summary>
+    /// <summary>
+    /// Also watches a folder, without recursion (for example, git's data directory once the repository is located).
+    /// Only the files that signal a commit, a checkout or a staging raise a notice.
+    /// </summary>
     public void Watch(FilePath dir) => Add(dir, recursive: false, root: null);
 
     private void Add(FilePath dir, bool recursive, FilePath? root)
@@ -41,7 +58,14 @@ public sealed class LocalFileSystemWatcher(Action onChange) : IDisposable
         void Handle(string path)
         {
             if (_disposed) return;
-            if (root is { } r && IsNoise(r, path)) return;
+            if (root is { } r)
+            {
+                if (IsNoise(r, path) || _isIgnored?.Invoke(new FilePath(path)) == true) return;
+            }
+            else if (!GitSignals.Contains(Path.GetFileName(path)))
+            {
+                return;
+            }
             onChange();
         }
         watcher.Created += (_, e) => Handle(e.FullPath);
