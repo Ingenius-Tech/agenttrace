@@ -55,16 +55,13 @@ public interface IProjectObserverListener
 /// </summary>
 public sealed class ProjectObserver : IDisposable
 {
-    private static readonly TimeSpan TracePoll = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan TraceDiscovery = TimeSpan.FromSeconds(2);
-    private static readonly TimeSpan ChangeDebounce = TimeSpan.FromMilliseconds(300);
-    private static readonly TimeSpan ChangeMaxWait = TimeSpan.FromSeconds(2);
-
     private readonly IReadOnlyList<IAgentAdapter> _adapters;
     private readonly GitCli _git;
     private readonly IProjectObserverListener _listener;
     private readonly TimeSpan _debounce;
     private readonly TimeSpan _maxWait;
+    private readonly TimeSpan _tracePoll;
+    private readonly TimeSpan _traceDiscovery;
     private readonly object _lock = new();
     private readonly ChangeCorrelator _correlator = new();
 
@@ -105,14 +102,24 @@ public sealed class ProjectObserver : IDisposable
     /// <summary>Files that the agent read in the session, inside the project.</summary>
     private readonly HashSet<FilePath> _reads = [];
 
-    public ProjectObserver(FilePath projectDir, IReadOnlyList<IAgentAdapter> adapters, IProjectObserverListener listener)
-        : this(projectDir, adapters, GitCli.ForDirectory(projectDir), ChangeDebounce, ChangeMaxWait, listener)
+    public ProjectObserver(FilePath projectDir, IReadOnlyList<IAgentAdapter> adapters, IProjectObserverListener listener, ObservationTiming? timing = null)
+        : this(projectDir, adapters, GitCli.ForDirectory(projectDir), timing ?? ObservationTiming.Default, listener)
     {
     }
 
-    public ProjectObserver(FilePath projectDir, IReadOnlyList<IAgentAdapter> adapters, GitCli git, TimeSpan debounce,
-        TimeSpan maxWait, IProjectObserverListener listener)
+    public ProjectObserver(FilePath projectDir, IReadOnlyList<IAgentAdapter> adapters, GitCli git, ObservationTiming timing,
+        IProjectObserverListener listener)
+        : this(projectDir, adapters, git, timing.Debounce, timing.MaxWait, listener, timing.TracePoll, timing.TraceDiscovery)
     {
+    }
+
+    /// <param name="tracePoll">How often the trace files are read (default: <see cref="ObservationTiming.Default"/>).</param>
+    /// <param name="traceDiscovery">How often the active session is looked up again (default: <see cref="ObservationTiming.Default"/>).</param>
+    public ProjectObserver(FilePath projectDir, IReadOnlyList<IAgentAdapter> adapters, GitCli git, TimeSpan debounce,
+        TimeSpan maxWait, IProjectObserverListener listener, TimeSpan? tracePoll = null, TimeSpan? traceDiscovery = null)
+    {
+        _tracePoll = tracePoll ?? ObservationTiming.Default.TracePoll;
+        _traceDiscovery = traceDiscovery ?? ObservationTiming.Default.TraceDiscovery;
         ProjectDir = projectDir;
         _adapters = adapters;
         _git = git;
@@ -188,7 +195,7 @@ public sealed class ProjectObserver : IDisposable
                 if (!_followedSessions.Add(first)) return true;
             }
         }
-        var follower = new TraceFollower(adapter, dir, TracePoll, TraceDiscovery, new TraceListener(this, adapter));
+        var follower = new TraceFollower(adapter, dir, _tracePoll, _traceDiscovery, new TraceListener(this, adapter));
         lock (_lock)
         {
             if (_closed) return true;
@@ -501,20 +508,35 @@ public sealed class ProjectObserver : IDisposable
         lock (_lock) return _slots.Count == 0 ? [ProjectDir] : [.. _slots.Select(s => s.Repo.Root)];
     }
 
-    /// <summary>What is hidden in the tree. With git it queries git, so it must not be called from the UI thread.</summary>
+    /// <summary>
+    /// What is hidden in the tree. With git it queries git, so it must not be called from the UI thread. The result also
+    /// feeds the file watcher: events inside ignored folders (a build writing <c>bin</c>) stop raising notices.
+    /// </summary>
     public IgnoreRules IgnoreRules()
     {
         List<RepoSlot> slots;
         lock (_lock) slots = [.. _slots];
-        if (slots.Count == 0) return Ingest.IgnoreRules.WithoutGit(ProjectDir);
-        try
+        IgnoreRules rules;
+        if (slots.Count == 0)
         {
-            return Ingest.IgnoreRules.WithGit(ProjectDir, slots.SelectMany(s => s.Repo.IgnoredPaths(s.Scope)).ToList());
+            rules = Ingest.IgnoreRules.WithoutGit(ProjectDir);
         }
-        catch (IOException)
+        else
         {
-            return Ingest.IgnoreRules.WithoutGit(ProjectDir);
+            try
+            {
+                rules = Ingest.IgnoreRules.WithGit(ProjectDir, slots.SelectMany(s => s.Repo.IgnoredPaths(s.Scope)).ToList());
+            }
+            catch (IOException)
+            {
+                rules = Ingest.IgnoreRules.WithoutGit(ProjectDir);
+            }
         }
+        lock (_lock)
+        {
+            if (_watcher is { } fsWatcher) fsWatcher.IsIgnored = rules.IsIgnored;
+        }
+        return rules;
     }
 
     /// <summary>Project files that the agent read in the session.</summary>

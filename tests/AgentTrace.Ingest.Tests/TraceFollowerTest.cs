@@ -109,6 +109,18 @@ public sealed class TraceFollowerTest : TempDirTestBase
     }
 
     [Fact]
+    public void WithoutASessionTheFoldersAreNotScannedAgainBeforeTheDiscoveryInterval()
+    {
+        var r = new Recorder();
+        using var f = new TraceFollower(new FakeAdapter(), Dir, TimeSpan.FromMilliseconds(10), TimeSpan.FromHours(1), r);
+        f.Tick();
+        Write(Dir.Combine("late.jsonl"), "late\n", 1_000);
+        f.Tick();
+        Assert.Empty(r.Sessions);
+        Assert.Empty(r.Texts);
+    }
+
+    [Fact]
     public void FollowsTheNewestSessionWithItsRelatedTraces()
     {
         Write(Dir.Combine("old.jsonl"), "old\n", 1_000);

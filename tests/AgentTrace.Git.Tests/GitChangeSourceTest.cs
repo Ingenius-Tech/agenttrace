@@ -52,6 +52,42 @@ public sealed class GitChangeSourceTest : GitTestBase
     }
 
     [Fact]
+    public void ADirtyFileWithTheSameSizeIsComparedByContentOnlyWhenItsTimeChanged()
+    {
+        _repo.Write("a.txt", "a\n");
+        _repo.CommitAll("base");
+        _repo.Write("a.txt", "dirty-1\n");
+        string file = _repo.Dir.Combine("a.txt").Value;
+        DateTime started = File.GetLastWriteTimeUtc(file);
+        GitChangeSource src = Session();
+
+        // Touched but identical: not a change
+        File.SetLastWriteTimeUtc(file, started.AddMinutes(5));
+        Assert.Empty(src.Changes());
+
+        // Same size, other content, other time: a change
+        _repo.Write("a.txt", "dirty-2\n");
+        File.SetLastWriteTimeUtc(file, started.AddMinutes(10));
+        Assert.Equal(new Dictionary<string, ChangeKind> { ["a.txt"] = ChangeKind.Modified }, Kinds(_repo.Dir, src.Changes()));
+    }
+
+    [Fact]
+    public void ADirtyFileWithTheSizeAndTimeOfTheSnapshotIsNotReadAgain()
+    {
+        _repo.Write("a.txt", "a\n");
+        _repo.CommitAll("base");
+        _repo.Write("a.txt", "dirty-1\n");
+        string file = _repo.Dir.Combine("a.txt").Value;
+        DateTime started = File.GetLastWriteTimeUtc(file);
+        GitChangeSource src = Session();
+
+        // Different content with the snapshot's size and time: it would only be noticed by reading the file, which is what is avoided
+        _repo.Write("a.txt", "dirty-2\n");
+        File.SetLastWriteTimeUtc(file, started);
+        Assert.Empty(src.Changes());
+    }
+
+    [Fact]
     public void FilesAlreadyDirtyAtStartAppearOnlyWhenTheyChangeAgain()
     {
         _repo.Write("a.txt", "a\n");

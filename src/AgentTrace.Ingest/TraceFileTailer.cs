@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 using AgentTrace.Core;
 
@@ -28,6 +29,10 @@ public sealed class TraceFileTailer(FilePath file)
     {
         Truncated = false;
         List<RawLine> lines = [];
+        // Nothing was appended: one stat, without opening the file
+        var info = new FileInfo(file.Value);
+        if (info.Exists && info.Length == _offset) return lines;
+        byte[]? buffer = null;
         try
         {
             using var stream = new FileStream(file.Value, FileMode.Open, FileAccess.Read,
@@ -40,7 +45,7 @@ public sealed class TraceFileTailer(FilePath file)
                 _pending = [];
                 Truncated = true;
             }
-            var buffer = new byte[Chunk];
+            buffer = ArrayPool<byte>.Shared.Rent(Chunk);
             while (_offset < size)
             {
                 stream.Seek(_offset, SeekOrigin.Begin);
@@ -56,6 +61,10 @@ public sealed class TraceFileTailer(FilePath file)
         }
         catch (DirectoryNotFoundException)
         {
+        }
+        finally
+        {
+            if (buffer is not null) ArrayPool<byte>.Shared.Return(buffer);
         }
         return lines;
     }
