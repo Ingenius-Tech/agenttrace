@@ -43,6 +43,7 @@ public sealed class TraceFollower(
     private readonly List<FilePath> _order = [];
     private FilePath? _currentSession;
     private long _lastDiscovery;
+    private bool _discovered;
     private CancellationTokenSource? _cts;
     private Task? _loop;
 
@@ -82,8 +83,10 @@ public sealed class TraceFollower(
     {
         lock (_gate)
         {
-            if (_currentSession is null || Stopwatch.GetElapsedTime(_lastDiscovery) >= discoveryInterval)
+            // Also while no session exists: looking for one scans the agent's folders, so it is not done on every tick
+            if (!_discovered || Stopwatch.GetElapsedTime(_lastDiscovery) >= discoveryInterval)
             {
+                _discovered = true;
                 _lastDiscovery = Stopwatch.GetTimestamp();
                 Discover();
             }
